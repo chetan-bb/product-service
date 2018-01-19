@@ -1,0 +1,7 @@
+node_modules/*
+test.yml
+help/*
+home/*
+data/*
+gitignore.swp
+.idea/*

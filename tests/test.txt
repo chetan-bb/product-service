@@ -1,0 +1,43 @@
+const parallel = require('async/parallel');
+
+
+
+parallel([
+        // (callback) => {
+        //     let productData = getProductData();
+        //     callback(null, productData);
+        // },
+        // async (callback) => {
+        //     console.log("getStoreAvailability getting called");
+        //     return (function(callback)  {
+        //         let storeAvailability = getStoreAvailability();
+        //         console.log("getStoreAvailability result");
+        //         callback(null, storeAvailability);
+        //     })(callback);
+        //
+        // },
+        async (callback) => {
+            let promo = await fetchPromoInfo();
+            callback(null, promo);
+        },
+        // (callback) => {
+        //     let  saleInfo = getSaleInfo();
+        //     callback(null, saleInfo);
+        // },
+        // (callback) => {
+        //     let comboInfo = getComboInfo();
+        //     callback(null, comboInfo);
+        // },
+        // (callback) => {
+        //     let tagInfo = getProductTags();
+        //     callback(null, tagInfo);
+        // }
+
+    ], function (err, result) {
+        // result will be of type array
+        //console.log(result);
+
+        // concat all this data
+        console.log("All call back are available!!!");
+        return res.send(result);
+    });

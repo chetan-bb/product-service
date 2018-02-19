@@ -8,9 +8,6 @@ ENV NODE_ENV production
 RUN mkdir -p /productservice
 WORKDIR /productservice
 
-# use nodemon for development
-RUN npm install nodemon -g
-
 # Install app dependencies
 #COPY package.json /productservice
 COPY package.json package.json

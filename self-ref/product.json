@@ -32,9 +32,9 @@
         "msg": "Gift message can be entered on the checkout page!"
       },
       "additional_attr": {
-        "is_new": false,
-        "display_order": 0,
-        "offer_score": 0,
+//        "is_new": false,
+//        "display_order": 0,
+//        "offer_score": 0,
         "info": [
           {
             "type": "parent_child_variant_type|bby|reco",

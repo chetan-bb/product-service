@@ -6,6 +6,7 @@ const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const compression = require("compression");
+const initDataBaseModels = require('./models/initModels');
 
 const routes = require('./routes/urls');
 const app = express();
@@ -59,5 +60,10 @@ app.use(function (err, req, res, next) {
 });
 
 
-module.exports = app;
+initDataBaseModels(function (dbInstance, models) {
+    app.locals['dbInstance'] = dbInstance;
+    app.locals['dbModels'] = models;
+    console.log(app.locals);
+});
 
+module.exports = app;

@@ -5,3 +5,4 @@ home/*
 data/*
 gitignore.swp
 .idea/*
+self-ref/*

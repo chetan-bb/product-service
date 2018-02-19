@@ -2,16 +2,10 @@
 
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middlerware/authmiddleware');
-const productController = require('../controller/productController');
-
-// general middleware
-router.use(authMiddleware());
-
-//url specific middleware
+const productDetailHandler = require('../assembler/productAssembler');
 
 // urls
-//router.get("api/v:api_version/products/", productController);
-router.get("/", productController);
+router.get("/product/v:apiVersion/detail/:productDescId/:masterRi", productDetailHandler);
+//router.get("/", productDetailHandler);
 
 module.exports = router;

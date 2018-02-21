@@ -18,14 +18,13 @@ function productDetailHandler(req, res) {
 
     getProductDataAsync(dbInstance, dbModels, productDescId, masterRi)
         .then((result) => {
-            res.json({
+            res.status(200).json({
                 "status": 0, "message": "success",
                 "response": result
             });
         }).catch((err) => {
-            res.status(err.status || 500);
-            res.json('error', {
-                message: err.message,
+            res.status(err.status || 500).json({
+                "status": -1, "message": err.message
             });
     });
 }

@@ -5,7 +5,7 @@ const Sequelize = require('sequelize');
 const modelDir = path.join(__dirname, "schema");
 
 
-module.exports = exports = async function (callBack) {
+module.exports = exports = function (callBack) {
     let database = process.env.DATABASE || 'bigbasket';
     let username = process.env.USERNAME || 'root';
     let password = process.env.PASSWORD || 'toor';
@@ -13,7 +13,6 @@ module.exports = exports = async function (callBack) {
     let dialect = process.env.DIALECT || 'mysql';
     let dbPort = process.env.DBPORT || 3306;
 
-    console.log(database, username, password, host);
     const sequelize = new Sequelize(database, username, password, {
         host: host,
         dialect: dialect,

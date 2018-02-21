@@ -19,7 +19,7 @@ kind: ConfigMap
 metadata:
   name: config-map-product-service
 data:
-  db.host: "internal-service"
+  db.host: "192.168.99.1"
   node.port: "3000"
 ---
 
@@ -29,11 +29,11 @@ metadata:
   name: product-service-secret
 type: Opeque
 data:
-  database: "YmlnYmFza2V0Cg=="
-  user.name: "cm9vdAo="
-  password: "dG9vcgo="
-  dialect: "bXlzcWwK"
-  db.port: "3306"
+  database: "YmlnYmFza2V0"
+  user.name: "cm9vdA=="
+  password: "dG9vcg=="
+  dialect: "bXlzcWw="
+  db.port: "MzMwNg=="
 
 ---
 
@@ -51,9 +51,12 @@ spec:
       labels:
         pod: product-pod
     spec:
+      hostNetwork: true
       containers:
         - name: product
           image: jugaljoshi/product-service
+
+          imagePullPolicy: Always #IfNotPresent
           env:
             - name: PORT
               valueFrom:

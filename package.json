@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www"
+    "start": "node ./bin/www",
+    "v1": "node -v",
+    "test1": "echo \"Error: no test specified\" && exit 1",
+    "erd": "sequelize-erd --source ./models/erd.js --destination ./models/erd.svg"
   },
   "dependencies": {
     "async": "^2.6.0",
@@ -24,5 +27,8 @@
     "serve-favicon": "~2.4.5",
     "striptags": "^3.1.1",
     "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "sequelize-erd": "^1.0.7"
   }
 }

@@ -63,7 +63,6 @@ app.use(function (err, req, res, next) {
 initDataBaseModels(function (dbInstance, models) {
     app.locals['dbInstance'] = dbInstance;
     app.locals['dbModels'] = models;
-    console.log(app.locals);
 });
 
 module.exports = app;

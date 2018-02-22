@@ -5,22 +5,22 @@ const tagUtil = require('./tagUtil');
 This is responsible to call data-layer and get json object from there
  */
 
-async function getProduct(dbInstance, dbModels, productDescriptionId, masterRi) {
-    let productAndPricing = await Promise.all([database.getProductFromDB(dbModels, productDescriptionId, masterRi),
-                                    database.getProductPricing(dbModels, productDescriptionId, masterRi)]);
-    //let Product = await database.getProductFromDB(models, productDescriptionId, masterRi);
-    if(!productAndPricing){
-        console.log("Error while fetching product from db");
-        return null;
-    }
+async function getProduct(productDescriptionId, masterRi) {
+    let productAndPricing = await Promise.all([database.getProductFromDB(productDescriptionId, masterRi),
+                                    database.getProductPricing(productDescriptionId, masterRi)]);
+
+
     let Product = productAndPricing[0];
     let Price = productAndPricing[1];
+    if(!Product || !Price || Product.isEmpty() || Price.isEmpty()){
+        return null;
+    }
     let ProductDescriptionAttr = null;
     let ParentCategory = null;
     let ManualTagValues = null;
     let AutoTagValues = null;
     if (Product) {
-        let resultBundlePackPDMetaParentCategory = await getProductRelatedDataAsync(dbInstance, dbModels, Product);
+        let resultBundlePackPDMetaParentCategory = await getProductRelatedDataAsync(Product);
         console.log(resultBundlePackPDMetaParentCategory);
         if (resultBundlePackPDMetaParentCategory.ProductBundlePack &&
             resultBundlePackPDMetaParentCategory.ProductBundlePack.status === ProductBundlePack.ACTIVE) {
@@ -38,12 +38,12 @@ async function getProduct(dbInstance, dbModels, productDescriptionId, masterRi) 
 }
 
 
-async function getProductRelatedDataAsync(dbInstance, dbModels, Product, childIds) {
-    let result = await Promise.all([database.getProductBundlePack(dbModels, Product.id),
-                database.getProductDescMetaData(dbModels, Product.ProductDescription.id),
-                database.getCategoryFromId(dbModels, Product.ProductDescription.Category.parent_id),
-                database.getManualTagAndTagGroup(dbInstance, dbModels, Product.ProductDescription.id),
-                database.getAutoTagAndTagGroup(dbInstance, dbModels, Product.ProductDescription.id)]);
+async function getProductRelatedDataAsync(Product) {
+    let result = await Promise.all([database.getProductBundlePack(Product.id),
+                database.getProductDescMetaData(Product.ProductDescription.id),
+                database.getCategoryFromId(Product.ProductDescription.Category.parent_id),
+                database.getManualTagAndTagGroup(Product.ProductDescription.id),
+                database.getAutoTagAndTagGroup(Product.ProductDescription.id)]);
 
 
     return {
@@ -55,13 +55,13 @@ async function getProductRelatedDataAsync(dbInstance, dbModels, Product, childId
     }
 }
 
-async function getAllChildrenForPdId(dbInstance, dbModels, productDescriptionId, masterRi) {
-    let childIds = await database.getAllParentChildProductForProductId(dbModels, productDescriptionId);
+async function getAllChildrenForPdId(productDescriptionId, masterRi) {
+    let childIds = await database.getAllParentChildProductForProductId(productDescriptionId);
 
     // fire len(child) queries async
     let asyncTasks = [];
     childIds.forEach((childId) => {
-        asyncTasks.push(getProduct(dbInstance, dbModels, childId, masterRi));
+        asyncTasks.push(getProduct(childId, masterRi));
     });
     return await Promise.all(asyncTasks);
 

@@ -7,6 +7,8 @@
 var app = require('../app');
 var debug = require('debug')('microservice:server');
 var http = require('http');
+const initDB = require('../datalayer/initDBInstanceModels');
+const setCustomJsFunction = require('../utils/customJsUtil');
 
 /**
  * Get port from environment and store in Express.
@@ -19,15 +21,32 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+let server = null;
+initDB.dbInstance.authenticate()
+    .then(() => {
+        console.log('Connection has been established successfully.');
+        setDBInstanceModels();
+        setCustomJsFunction();
+        server = http.createServer(app);
 
-/**
- * Listen on provided port, on all network interfaces.
- */
+        /**
+         * Listen on provided port, on all network interfaces.
+         */
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+        server.listen(port);
+        server.on('error', onError);
+        server.on('listening', onListening);
+
+    })
+    .catch(err => {
+        console.error('Unable to connect to the database:', err);
+    });
+
+
+function setDBInstanceModels() {
+    process.dbInstance = initDB.dbInstance;
+    process.dbModels = initDB.dbModels;
+}
 
 /**
  * Normalize a port into a number, string, or false.

@@ -1,60 +1,33 @@
 const Op = require('sequelize').Op;
 
 
-async function getProductFromDB(dbModels, productDescriptionId, masterRi) {
+async function getProductFromDB(productDescriptionId, masterRi) {
 
-    return await dbModels.Product.findOne({
+    return await process.dbModels.Product.findOne({
         where: {
-            //reservation_info_id: masterRi,
+            reservation_info_id: masterRi, //todo handle this
             product_description_id: productDescriptionId
         },
         include: [
             {
-                model: dbModels.ProductDescription,
+                model: process.dbModels.ProductDescription,
                 include: [
-                    {model: dbModels.ProductBrand},
-                    {model: dbModels.Category, as: "TopCategory", attributes: ["name", "slug"]},
-                    {model: dbModels.Category, as: "Category", attributes: ["parent_id", "slug"]}
+                    {model: process.dbModels.ProductBrand},
+                    {model: process.dbModels.Category, as: "TopCategory", attributes: ["name", "slug"]},
+                    {model: process.dbModels.Category, as: "Category", attributes: ["parent_id", "slug"]}
                     ]
             },
             {
-                model: dbModels.City
+                model: process.dbModels.City
             }
         ]
     });
 
-    // include: [dbModels.ProductBrand, dbModels.Category]
-
-
-    // return new Promise((resolve, reject) => {
-    //     dbModels.Product.findOne({
-    //         where: {
-    //             //reservation_info_id: masterRi,
-    //             product_description_id: productDescriptionId
-    //         },
-    //         include: [
-    //             {
-    //                 model: dbModels.ProductDescription,
-    //                 include: [dbModels.ProductBrand, dbModels.Category]
-    //             },
-    //         ]
-    //     }).then(product => {
-    //         if (product) {
-    //             resolve(product);
-    //         } else {
-    //             reject(false);
-    //         }
-    //     }).catch(err => {
-    //         console.log(err);
-    //         reject(err);
-    //     })
-    // });
-
 }
 
 
-async function getCategoryFromId(dbModels, categoryId) {
-    return await dbModels.Category.findOne({
+async function getCategoryFromId(categoryId) {
+    return await process.dbModels.Category.findOne({
         where: {
             id: categoryId
         }
@@ -62,85 +35,38 @@ async function getCategoryFromId(dbModels, categoryId) {
     });
 }
 
-async function getProductBundlePack(dbModels, productId) {
-    return await dbModels.ProductBundlePack.findOne({
+async function getProductBundlePack(productId) {
+    return await process.dbModels.ProductBundlePack.findOne({
             where: {
                 product_id: productId
             }
         });
-
-
-    // return new Promise((resolve, reject) => {
-    //     dbModels.ProductBundlePack.findOne({
-    //         where: {
-    //             product_id: productId
-    //         }
-    //     }).then(productBundlePack => {
-    //         resolve(productBundlePack)
-    //     }).catch(err => {
-    //         console.log(err);
-    //         reject(false)
-    //     })
-    // });
-
 }
 
 
-async function getProductDescMetaData(dbModels, productDescriptionId) {
+async function getProductDescMetaData(productDescriptionId) {
 
-    return await dbModels.ProductDescriptionAttr.findOne({
+    return await process.dbModels.ProductDescriptionAttr.findOne({
             where: {
                 parent_obj_id: productDescriptionId
             }
         });
-
-
-    // return new Promise((resolve, reject) => {
-    //     dbModels.ProductDescriptionAttr.findOne({
-    //         where: {
-    //             parent_obj_id: productDescriptionId
-    //         }
-    //     }).then(productDescriptionAttr => {
-    //         resolve(productDescriptionAttr)
-    //     }).catch(err => {
-    //         console.log(err);
-    //         reject(false);
-    //     })
-    // });
-
 }
 
 
-async function getProductPricing(dbModels, productDescriptionId) {
-    return await dbModels.Product.findOne({
+async function getProductPricing(productDescriptionId, masterRi) {
+    return await process.dbModels.Product.findOne({
             where: {
-                //reservation_info_id: masterRi,
+                reservation_info_id: masterRi,
                 product_description_id: productDescriptionId
             },
             attributes: ['mrp', 'salePrice'],
         });
-
-
-
-    // return new Promise((resolve, reject) => {
-    //     dbModels.Product.findOne({
-    //         where: {
-    //             //reservation_info_id: masterRi,
-    //             product_description_id: productDescriptionId
-    //         },
-    //         attributes: ['mrp', 'salePrice'],
-    //     }).then(product => {
-    //         resolve(product);
-    //     }).catch(err => {
-    //         console.log(err);
-    //         reject(err);
-    //     })
-    // });
 }
 
 
-async function getManualTagAndTagGroup(dbInstance, dbModels, productDescriptionId) {
-    return await dbInstance.query('SELECT `tag_tagvalue`.`id`,\n' +
+async function getManualTagAndTagGroup(productDescriptionId) {
+    return await process.dbInstance.query('SELECT `tag_tagvalue`.`id`,\n' +
         '`tag_tagvalue`.`tag_group_id`,\n' +
         '`tag_tagvalue`.`tag_value`,\n' +
         '`tag_tagvalue`.`display_order`,\n' +
@@ -155,14 +81,14 @@ async function getManualTagAndTagGroup(dbInstance, dbModels, productDescriptionI
         'WHERE `product_productdescription_product_tags`.`productdescription_id` = :productDescriptionId',
         {
             mapToModel: true,
-            model: dbModels.TagValue,
+            model: process.dbModels.TagValue,
             replacements: {productDescriptionId: productDescriptionId}
         });
 }
 
 
-async function getAutoTagAndTagGroup(dbInstance, dbModels, productDescriptionId) {
-    return await dbInstance.query('SELECT `tag_tagvalue`.`id`,\n' +
+async function getAutoTagAndTagGroup(productDescriptionId) {
+    return await process.dbInstance.query('SELECT `tag_tagvalue`.`id`,\n' +
         '`tag_tagvalue`.`tag_group_id`,\n' +
         '`tag_tagvalue`.`tag_value`,\n' +
         '`tag_tagvalue`.`display_order`,\n' +
@@ -177,20 +103,20 @@ async function getAutoTagAndTagGroup(dbInstance, dbModels, productDescriptionId)
         'WHERE `product_productdescription_auto_product_tags`.`productdescription_id` = :productDescriptionId',
         {
             mapToModel: true,
-            model: dbModels.TagValue,
+            model: process.dbModels.TagValue,
             replacements: {productDescriptionId: productDescriptionId}
         });
 }
 
-async function getAllParentChildProductForProductId(dbModels, productDescriptionId) {
-    let ProductParentChildObject = await dbModels.ProductParentChild.findOne({
+async function getAllParentChildProductForProductId(productDescriptionId) {
+    let ProductParentChildObject = await process.dbModels.ProductParentChild.findOne({
         where: {
             [Op.or]: [{childId: productDescriptionId}, {parentId: productDescriptionId}]
         },
         attributes: ['parentId']
     });
 
-    let childIds = await dbModels.ProductParentChild.findAll({
+    let childIds = await process.dbModels.ProductParentChild.findAll({
         where: {
             parentId: ProductParentChildObject.parentId
         },

@@ -42,17 +42,6 @@ module.exports = function (sequelize, DataTypes) {
                 allowNull: true
             }
         });
-        // value.belongsTo(dbModels.Supplier, {
-        //     foreignKey: {
-        //         allowNull: false
-        //     }
-        // });
-        value.belongsTo(dbModels.ReservationInfo, {
-            foreignKey: {
-                allowNull: false,
-                name: "reservation_info_id"
-            }
-        });
     };
 
     Product.prototype.topCategoryName = function () {

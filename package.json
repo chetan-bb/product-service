@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
+    "start": "nodemon ./bin/www",
     "v1": "node -v",
     "test1": "echo \"Error: no test specified\" && exit 1",
     "erd": "sequelize-erd --source ./models/erd.js --destination ./models/erd.svg"

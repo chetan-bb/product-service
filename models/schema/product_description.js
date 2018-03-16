@@ -23,6 +23,7 @@ module.exports = function (sequelize, DataTypes) {
             "version": {type: DataTypes.INTEGER, defaultValue: 0},
             "newInMarket": {type: DataTypes.BOOLEAN, defaultValue: false, field: "new_in_market"},
             "hasVariableWeight": {type: DataTypes.BOOLEAN, defaultValue: false, field: "has_variable_weight"},
+            "weight": {type: DataTypes.STRING(25), allowNull: true},
             "department": {type: DataTypes.STRING(50)},
         }, DataTypes),
         // Configs, 

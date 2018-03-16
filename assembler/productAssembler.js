@@ -5,17 +5,22 @@ const imageUtil = require('../service/imageUtil');
 const productController = require('../service/productService');
 const striptags = require('striptags');
 const CONSTANTS = require('./constants');
+const util = require('../utils/util');
 
 async function getProductDataForPdId(productDescId, masterRi) {
     try {
         let productPricingResultObject = await Promise.all([
             productController.getProduct(productDescId, masterRi),
-            productController.getAllChildrenForPdId(productDescId, masterRi)]);
-
+            productController.getAllChildrenForPdId(productDescId, masterRi),
+            productController.getAllComboProductsForProductId(productDescId, masterRi),
+            productController.getAllRelatedComboProductsForProductId(productDescId)
+        ]);
 
         let productResult = productPricingResultObject[0];
         let childProducts = productPricingResultObject[1];
-
+        let comboResult = productPricingResultObject[2];
+        let additionDestination = productPricingResultObject[3];
+        
         if (!productResult || productResult.isEmpty()) {
             throw `Product not found for given pd id ${productDescId} and masterRi ${masterRi}`;
         }
@@ -36,18 +41,19 @@ async function getProductDataForPdId(productDescId, masterRi) {
             productResult.Price,
             productResult.ProductDescriptionAttr,
             productResult.ParentCategory,
-            productResult.ManualTagValues, productResult.AutoTagValues);
-
+            productResult.ManualTagValues, productResult.AutoTagValues,
+            comboResult, additionDestination);
+        
         return Object.assign(parentProductResponse, {children: childProductsResponse});
     } catch (err) {
-        throw {status:500, message:err};
+        throw {status:500, message:err.message, stack: err.stack};
     }
 
 }
 
 
 function generateProductDetailResponse(Product, Price, ProductDescriptionAttr, ParentCategory,
-                                             ManualTagValues, AutoTagValues) {
+                                             ManualTagValues, AutoTagValues,ComboResult,AdditionDestination) {
     //get data from service and assemble
     let responseGetters = [getProductData(Product),
                                             getPricingData(Price),
@@ -58,7 +64,9 @@ function generateProductDetailResponse(Product, Price, ProductDescriptionAttr, P
                                             getProductAdditionalAttr(Product),
                                             getVariableWeightMsgAndLink(Product.ProductDescription,
                                                 ParentCategory, Product.City), //todo this city might be request city i think
-                                            getProductTags(ManualTagValues, AutoTagValues)
+                                            getProductTags(ManualTagValues, AutoTagValues),
+                                            getComboResult(ComboResult),
+                                            getAdditionDestination(AdditionDestination)
                                             ];
     let response = {};
     responseGetters.forEach((fn)=>{
@@ -165,8 +173,8 @@ function getProductData(Product) {
 
 function getPricingData(Price) {
     return {
-        "mrp": Price.mrp,
-        "sp": Price.salePrice
+        "mrp": util.amountDisplay(Price.mrp),
+        "sp": util.amountDisplay(Price.salePrice)
     }
 }
 
@@ -254,5 +262,20 @@ function getVariableWeightMsg(ProductDescription, ParentCategory, CAP_VARIABLE_W
 }
 
 
+function getComboResult(ComboResult){
+    if(ComboResult && !ComboResult.isEmpty()){
+        return {
+            "combo_dict":ComboResult
+        };
+    }
+}
+
+function getAdditionDestination(AdditionDestination){
+    if(AdditionDestination && !AdditionDestination.isEmpty()){
+        return {
+            "addition_destination":AdditionDestination
+        };
+    }
+}
 
 module.exports = getProductDataForPdId;

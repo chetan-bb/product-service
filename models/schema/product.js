@@ -42,6 +42,11 @@ module.exports = function (sequelize, DataTypes) {
                 allowNull: true
             }
         });
+        value.belongsTo(dbModels.Supplier, {
+            foreignKey: {
+                allowNull: true,
+            }
+        });
     };
 
     Product.prototype.topCategoryName = function () {
@@ -85,6 +90,15 @@ module.exports = function (sequelize, DataTypes) {
         }
     };
 
+    Product.prototype.short_description = function () {
+        console.log(this);
+        if(this.ProductDescription){
+            return this.ProductDescription.short_description;
+        }else {
+            return '';
+        }
+    };
+
     Product.prototype.multipackDescription = function () {
         if(this.ProductBundlePack){
             return this.ProductBundlePack.multiPackDescription;
@@ -102,9 +116,9 @@ module.exports = function (sequelize, DataTypes) {
     };
 
     Product.prototype.weight = function () {
-        if(this.ProductBundlePack){
+        if(this.ProductBundlePack && this.ProductBundlePack.weight){
             return this.ProductBundlePack.weight;
-        }else if(this.ProductDescription){
+        }else if(this.ProductDescription && this.ProductDescription.weight){
             return this.ProductDescription.weight;
         }else {
             return ''

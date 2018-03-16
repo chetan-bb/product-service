@@ -64,6 +64,19 @@ async function getProductPricing(productDescriptionId, masterRi) {
         });
 }
 
+async function getSupplier(supplier_id) {
+    return await process.dbModels.Supplier.findOne({
+            where: {
+                id: supplier_id
+            },
+            include: [
+                {   model: process.dbModels.FulfillmentInfo,
+                    as: "FulfillmentInfo" 
+                },
+            ]
+        });
+}
+
 
 async function getManualTagAndTagGroup(productDescriptionId) {
     return await process.dbInstance.query('SELECT `tag_tagvalue`.`id`,\n' +
@@ -123,14 +136,105 @@ async function getAllParentChildProductForProductId(productDescriptionId) {
         attributes: ['childId'],
         order: ['order']
     });
-
     return Array.from(new Set(childIds.map((child)=> child.childId))).filter((val)=>val !== ProductParentChildObject.parentId);
 
 }
 
+async function isComboProduct(productDescriptionId) {
+    let comboProducts = await process.dbModels.ComboProductDescription.findAll({
+        where: {
+            status: process.dbModels.ComboProductDescription.ACTIVE,
+            parent_combo_sku_id: productDescriptionId
+        }
+        })
+    if(comboProducts.length>0){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
 
+async function isSingleSkuComboProduct(productDescriptionId) {
+    let comboProducts = await process.dbModels.ComboProductDescription.findAll({
+        where: {
+            status: process.dbModels.ComboProductDescription.ACTIVE,
+            combo_type: process.dbModels.ComboProductDescription.SINGLE_SKU,
+            parent_combo_sku_id: productDescriptionId
+        }
+    })
+    if(comboProducts.length>0){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+async function getAllComboProductsForProductId(productDescriptionId) {
+    let comboProducts = await process.dbModels.ComboProductDescription.findAll({
+        where: {
+            status: process.dbModels.ComboProductDescription.ACTIVE,
+            combo_type: process.dbModels.ComboProductDescription.MULTI_SKU,
+            parent_combo_sku_id: productDescriptionId
+        },
+        attributes: ['child_sku_id','quantity'],
+        include:[
+            { 
+                model: process.dbModels.ProductDescription,
+                as: "ChildProductDescription",
+                include: [
+                    {
+                        model: process.dbModels.ProductBrand
+                    },
+                ]
+            }
+        ]
+        })
+
+    return Array.from(new Set(comboProducts.map((child)=> [child.dataValues.child_sku_id,child.dataValues.quantity, child.ChildProductDescription.dataValues])));
+}
+
+async function getAllRelatedComboProductsForProductId(productDescriptionId) {
+    let relatedComboProducts = await process.dbModels.ComboProductDescription.findAll({
+        where: {
+            status: process.dbModels.ComboProductDescription.ACTIVE,
+            child_sku_id: productDescriptionId
+        },
+        attributes: ['parent_combo_sku_id']
+    })
+    return Array.from(new Set(relatedComboProducts.map((child)=> child.dataValues.parent_combo_sku_id)));
+}
+
+async function getComboPcForParentCombo(parentProductId, child_product_list){
+    let combo_discount_breakups = await process.dbModels.ComboPc.findAll({
+        where: {
+            status: process.dbModels.ComboPc.ACTIVE,
+            combo_parent_product_id: parentProductId,
+            combo_child_product_id: {
+                [Op.in] : child_product_list
+            }
+        },
+        include:[
+            {
+                model: process.dbModels.ComboProductDiscountBreakup,
+                as: "CurrentDiscount",
+                include:[
+                    {
+                        model: process.dbModels.Product,
+                        as : "ChildProduct"
+                    }
+                ]
+            }
+        ]
+    })
+    return combo_discount_breakups;
+}
 
 let dataBase = {getProductFromDB, getProductDescMetaData,
     getProductBundlePack, getProductPricing, getCategoryFromId,
-    getManualTagAndTagGroup, getAutoTagAndTagGroup, getAllParentChildProductForProductId};
+    getManualTagAndTagGroup, getAutoTagAndTagGroup, getAllParentChildProductForProductId,
+    getAllComboProductsForProductId, getAllRelatedComboProductsForProductId, 
+    getComboPcForParentCombo, getSupplier, isComboProduct, isSingleSkuComboProduct
+};
 module.exports = dataBase;

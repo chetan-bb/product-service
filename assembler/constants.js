@@ -32,4 +32,18 @@ module.exports = {
     PROMO_OFFER_BY_CATEGORY: "promo-offers-cat",
     PROMO_OFFERS_BY_TYPE: "promo-offers-type",
     PROMO_OFFERS_FOR_YOU: "promo-offers-foryou",
+
+    FI_TYPE_NORMAL: "normal",
+    FI_TYPE_EXPRESS: "darkstore-express",
+
+    NO_SHIPMENT_INFO    : "NO_SHIPMENT_INFO",
+    WILL_GO_TOGETHER    : "WILL_GO_TOGETHER",
+    MAY_GO_SEPARATELY   : "MAY_GO_SEPARATELY",
+    WILL_GO_SEPARATELY  : "WILL_GO_SEPARATELY",
+    ANNOTATION_TYPES : {
+        NO_SHIPMENT_INFO      : '',
+        WILL_GO_TOGETHER      : 'All items will go together in a single shipment',
+        MAY_GO_SEPARATELY     : 'Some products may get delivered in multiple shipments',
+        WILL_GO_SEPARATELY    : 'Some products will get delivered in multiple shipments'
+    }
 };

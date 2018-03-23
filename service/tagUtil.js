@@ -5,13 +5,12 @@ module.exports.createTagObject = (tagValueList) => {
         let url = absUrl || '';
         let slug = url ? url.split('/')[2] : '';
         if (tagGroupAndTagValues[tagValue.tagGroupAttributeType]) {
-            tagGroupAndTagValues[tagValue.tagGroupAttributeType] =
-                tagGroupAndTagValues[tagValue.tagGroupAttributeType].push(
-                    {
-                        tagValue: tagValue['tagValue'],
-                        url,
-                        slug
-                    })
+            tagGroupAndTagValues[tagValue.tagGroupAttributeType].push(
+                {
+                    tagValue: tagValue['tagValue'],
+                    url,
+                    slug
+                })
         } else {
             tagGroupAndTagValues[tagValue.tagGroupAttributeType] = [{
                 tagValue: tagValue['tagValue'],

@@ -45,5 +45,12 @@ module.exports = {
         WILL_GO_TOGETHER      : 'All items will go together in a single shipment',
         MAY_GO_SEPARATELY     : 'Some products may get delivered in multiple shipments',
         WILL_GO_SEPARATELY    : 'Some products will get delivered in multiple shipments'
+    },
+            
+    BASE_IMAGE_URL: "https://www.bigbasket.com/media/uploads",
+
+    BUNDLE_PACK_CONST : {
+        ACTIVE: 0,
+        INACTIVE:1
     }
 };

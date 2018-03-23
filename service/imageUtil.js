@@ -1,34 +1,37 @@
 const util = require('../utils/util');
 
 
-function getProductPrimaryImage(Product) {
-    let noWatermark = false;
-    let subUrl = null;
-    let imageName = null;
-    let citySlug = Product.City.slug;
-    if(Product.ProductBundlePack){
-        subUrl = `/bpi/${citySlug}`;
-        imageName = getProductImageName(Product.ProductDescription, Product.ProductBundlePack.imageVersion,
-                                        noWatermark, citySlug);
-    }else {
-        subUrl = `/p/`;
-        imageName = getProductImageName(Product.ProductDescription, Product.ProductDescription.version,
-                                        noWatermark, citySlug);
+function getProductPrimaryImage(Product, noWatermark = false) {
+    if (!Product || !Product.City) {
+        return null;
     }
-    return {subUrl, imageName}
+    let imageSubPathImageName = {};
+    let citySlug = Product.City.slug;
+    if (Product.ProductBundlePack) {
+        imageSubPathImageName = getProductImageName(Product.ProductDescription, Product.ProductBundlePack.imageVersion,
+            noWatermark);
+        imageSubPathImageName['subUrl'] = `/bpi/${citySlug}`;
+    } else {
+        imageSubPathImageName = getProductImageName(Product.ProductDescription, Product.ProductDescription.version,
+            noWatermark);
+    }
+    return imageSubPathImageName;
 }
 
 function getProductImageName(ProductDescription, version, noWaterMark) {
     // assuming that images will always come from s3
 
-    let imageName = null;
-    if(version !== 0){
-        if(!noWaterMark){
-            return `${ProductDescription.id}_${version}-${ProductDescription.ProductBrand.slug.toLowerCase()}-${ProductDescription.slug.toLowerCase()}.jpg`;
-        }else {
-            return `${generateRawImageFileName(ProductDescription.id)}_${version}`;
+    let imageName = {};
+    if (version !== 0) {
+        if (!noWaterMark) {
+            return {
+                subUrl: '/p/',
+                imageName: `${ProductDescription.id}_${version}-${ProductDescription.ProductBrand.slug.toLowerCase()}-${ProductDescription.slug.toLowerCase()}.jpg`
+            };
+        } else {
+            return {subUrl: '/pnw/', imageName: `${generateRawImageFileName(ProductDescription.id)}_${version}.jpg`};
         }
-    } // todo check, else client handle this
+    }
     return imageName;
 }
 
@@ -48,18 +51,20 @@ function getProductSecondaryImages(ProductDescription, noWaterMark, ignoreShade,
             return true;
         }
         let imagePath = `${ProductDescription.id}-${num}`;
+
         let pdSlug = ProductDescription.slug.toLowerCase();
         if(imageType.length > 0){
-            imagePath = `${imageData}-${imageType}`;
+            imagePath = `${imagePath}-${imageType}`;
         }
         if(version !== 0){
+            let imagePathAndName = {};
             if(noWaterMark){
-                imagePath = `${generateRawImageFileName(imagePath)}_${version}-${brandSlug}-${pdSlug}.jpg`;
+                imagePathAndName = {subUrl: '/pnw/', imageName:`${generateRawImageFileName(imagePath)}_${version}-${brandSlug}-${pdSlug}.jpg`};
             }else {
-                imagePath = `${imagePath}_${version}-${brandSlug}-${pdSlug}.jpg`;
+                imagePathAndName = {subUrl: '/p/', imageName:`${imagePath}_${version}-${brandSlug}-${pdSlug}.jpg`};
             }
+            imageList.push(imagePathAndName);
         } // no product image handled by client
-        imageList.push(imagePath);
     });
 
     return imageList;
@@ -72,13 +77,14 @@ function generateRawImageFileName(baseFile) {
     let splitBaseFile = baseFile.split('-');
     let productId = splitBaseFile[0];
     if (splitBaseFile.length === 1) {
-        return util.encodeBase64(productId).replace("=", "")
+        return util.encodeBase64(productId).replace(/=/g, "")
     } else if (splitBaseFile.length === 2) {
         let ext = splitBaseFile[1];
-        return util.encodeBase64(productId).replace("=", "") + '-' + ext;
+        console.log(productId, ext);
+        return util.encodeBase64(productId).replace(/=/g, "") + '-' + ext;
     } else if (splitBaseFile.length === 3) {
         let ext = splitBaseFile[1] + '-' + splitBaseFile[2];
-        return util.encodeBase64(productId).replace("=", "") + '-' + ext;
+        return util.encodeBase64(productId).replace(/=/g, "") + '-' + ext;
     }
 }
 

@@ -8,12 +8,10 @@ This is responsible to call data-layer and get json object from there
  */
 
 async function getProduct(productDescriptionId, masterRi) {
-    let productAndPricing = await Promise.all([database.getProductFromDB(productDescriptionId, masterRi),
-                                    database.getProductPricing(productDescriptionId, masterRi)]);
+    let productAndPricing = await Promise.all([database.getProductFromDB(productDescriptionId, masterRi)]);
 
     let Product = productAndPricing[0];
-    let Price = productAndPricing[1];
-    if(!Product || !Price || Product.isEmpty() || Price.isEmpty()){
+    if(!Product || Product.isEmpty()){
         return null;
     }
     let ProductDescriptionAttr = null;
@@ -25,7 +23,7 @@ async function getProduct(productDescriptionId, masterRi) {
         let resultBundlePackPDMetaParentCategory = await getProductRelatedDataAsync(Product);
         console.log(resultBundlePackPDMetaParentCategory);
         if (resultBundlePackPDMetaParentCategory.ProductBundlePack &&
-            resultBundlePackPDMetaParentCategory.ProductBundlePack.status === ProductBundlePack.ACTIVE) {
+            resultBundlePackPDMetaParentCategory.ProductBundlePack.status === CONSTANTS.BUNDLE_PACK_CONST.ACTIVE) {
             Product['ProductBundlePack'] = resultBundlePackPDMetaParentCategory.ProductBundlePack
         } else {
             Product['ProductBundlePack'] = null;
@@ -36,7 +34,7 @@ async function getProduct(productDescriptionId, masterRi) {
         AutoTagValues = tagUtil.createTagObject(resultBundlePackPDMetaParentCategory.AutoTagValues);
         Supplier = await database.getSupplier(Product.supplier_id);
     }
-    return {Product, Price, ProductDescriptionAttr, ParentCategory, ManualTagValues, AutoTagValues, Supplier}
+    return {Product, ProductDescriptionAttr, ParentCategory, ManualTagValues, AutoTagValues, Supplier}
 }
 
 

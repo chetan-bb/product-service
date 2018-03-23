@@ -10,8 +10,8 @@ const path = require('path');
 async function getProductDataForPdId(productDescId, masterRi) {
     try {
         let productPricingResultObject = await Promise.all([
-            productController.getProduct(productDescId, masterRi)
-            //productController.getAllChildrenForPdId(productDescId, masterRi)
+            productController.getProduct(productDescId, masterRi),
+            productController.getAllChildrenForPdId(productDescId, masterRi)
         ]);
 
 
@@ -23,16 +23,19 @@ async function getProductDataForPdId(productDescId, masterRi) {
         }
 
         let childProductsResponse = [];
-        // childProducts.forEach((productResult) => {
-        //     if(!productResult || productResult.isEmpty()){
-        //         return true; // same as continue in foreach loop
-        //     }
-        //     let result = generateProductDetailResponse(productResult.Product,
-        //         productResult.ProductDescriptionAttr,
-        //         productResult.ParentCategory,
-        //         productResult.ManualTagValues, productResult.AutoTagValues);
-        //     childProductsResponse.push(result);
-        // });
+        if (childProducts) {
+
+            childProducts.forEach((productResult) => {
+                if (!productResult || productResult.isEmpty()) {
+                    return true; // same as continue in foreach loop
+                }
+                let result = generateProductDetailResponse(productResult.Product,
+                    productResult.ProductDescriptionAttr,
+                    productResult.ParentCategory,
+                    productResult.ManualTagValues, productResult.AutoTagValues);
+                childProductsResponse.push(result);
+            });
+        }
         let parentProductResponse = generateProductDetailResponse(productResult.Product,
             productResult.ProductDescriptionAttr,
             productResult.ParentCategory,
@@ -134,14 +137,10 @@ function getProductImages(Product, ProductDescriptionAttr) {
 }
 
 function generateMultipleImageUrls(subUrl, imageName, imageSize=['ml', 's', 'l']) {
-    let images = [];
+    let images = {};
     for (let i = 0, len = imageSize.length; i < len; i++) {
-        let imageSizeUrls = [];
-        imageSizeUrls.push(path.join(subUrl, imageSize[i], imageName));
-        images.push({[imageSize[i]]:imageSizeUrls})
+        images[imageSize[i]] = path.join(subUrl, imageSize[i], imageName)
     }
-
-
     return images;
 }
 

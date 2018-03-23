@@ -3,6 +3,7 @@ const tagUtil = require('./tagUtil');
 const util = require('../utils/util');
 const CONSTANTS = require('../assembler/constants');
 
+
 /*
 This is responsible to call data-layer and get json object from there
  */
@@ -94,7 +95,8 @@ async function getAnnotationMsg(productDescriptionId, childIds, childProductsDic
         return Promise.resolve(annotationmsg);
     }
     if(fi_type_set.length === childIdsSet.length && childIdsSet.length>0){
-        if(fi_type_set.find(CONSTANTS.FI_TYPE_NORMAL) || fi_type_set.find(CONSTANTS.FI_TYPE_EXPRESS)){
+        if(fi_type_set.find(CONSTANTS.FI_TYPE[CONSTANTS.FI_TYPE_NORMAL]) 
+            || fi_type_set.find(CONSTANTS.FI_TYPE[CONSTANTS.FI_TYPE_EXPRESS])){
             annotationmsg = CONSTANTS.ANNOTATION_TYPES[CONSTANTS.MAY_GO_SEPARATELY];     
             return Promise.resolve(annotationmsg);       
         }
@@ -110,18 +112,22 @@ async function getAnnotationMsg(productDescriptionId, childIds, childProductsDic
     return await Promise.resolve(annotationmsg);
 }
 
+function buildChildProductDict(childProductsDict, childProduct, quantity){
+    childProductsDict[childProduct.Product.ProductDescription.id] = {
+        "mrp"           : Number(childProduct.Product.mrp),
+        "sale_price"    : (childProduct.Product.salePrice) ? Number(childProduct.Product.salePrice):0,
+        "quantity"      : quantity,
+        "supplier"      : childProduct.Supplier
+    }
+};
+
 async function getComboChildProductsDict(childIds, masterRi){
     let childProductsDict = {};
     let childProductsIdsList = [];
     for(let childId of childIds){
         let childProduct = await getProduct(childId[0], masterRi);
         if(childProduct.Product) {
-            childProductsDict[childProduct.Product.ProductDescription.id] = {
-                "mrp"           : Number(childProduct.Product.mrp),
-                "sale_price"    : (childProduct.Product.salePrice) ? Number(childProduct.Product.salePrice):0,
-                "quantity"      : childId[1],
-                "supplier"      : childProduct.Supplier
-            }
+            buildChildProductDict(childProductsDict, childProduct, childId[1])
             childProductsIdsList.push(childProduct.Product.id);
         }
     };
@@ -142,6 +148,7 @@ async function getComboDiscountBreakupDict(parent_product_id, child_product_ids)
 
 async function getComboSku(comboDiscountBreakupDict, childProductsDict){
     let comboSku = {};
+    debugger;
     for(let cdbd in comboDiscountBreakupDict){
         if (comboDiscountBreakupDict.hasOwnProperty(cdbd)) {           
             let cdbd_key = cdbd;
@@ -183,7 +190,7 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
     let childProductsIdsList = childProductResult[1];
     
     let comboDiscountBreakupDict = await getComboDiscountBreakupDict(parentProduct.Product.id, childProductsIdsList)
-    
+    debugger;
     let comboSku = await getComboSku(comboDiscountBreakupDict, childProductsDict)
     
     
@@ -276,4 +283,5 @@ async function getAllRelatedComboProductsForProductId(productDescriptionId) {
 };
 
 module.exports = {getProduct, getAllChildrenForPdId, getAllComboProductsForProductId, 
-    getAllRelatedComboProductsForProductId};
+    getAllRelatedComboProductsForProductId, getAnnotationMsg, getComboSku, 
+    getComboChildProductsDict};

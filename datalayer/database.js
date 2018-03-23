@@ -209,7 +209,7 @@ async function getAllRelatedComboProductsForProductId(productDescriptionId) {
 async function getComboPcForParentCombo(parentProductId, child_product_list){
     let combo_discount_breakups = await process.dbModels.ComboPc.findAll({
         where: {
-            status: process.dbModels.ComboPc.ACTIVE,
+            // status: process.dbModels.ComboPc.ACTIVE,
             combo_parent_product_id: parentProductId,
             combo_child_product_id: {
                 [Op.in] : child_product_list

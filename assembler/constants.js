@@ -33,9 +33,13 @@ module.exports = {
     PROMO_OFFERS_BY_TYPE: "promo-offers-type",
     PROMO_OFFERS_FOR_YOU: "promo-offers-foryou",
 
-    FI_TYPE_NORMAL: "normal",
-    FI_TYPE_EXPRESS: "darkstore-express",
-
+    FI_TYPE_NORMAL  :"normal",
+    FI_TYPE_EXPRESS :"express",
+    FI_TYPE:{
+        FI_TYPE_NORMAL  : "normal",
+        FI_TYPE_EXPRESS : "darkstore-express",
+    },
+    
     NO_SHIPMENT_INFO    : "NO_SHIPMENT_INFO",
     WILL_GO_TOGETHER    : "WILL_GO_TOGETHER",
     MAY_GO_SEPARATELY   : "MAY_GO_SEPARATELY",

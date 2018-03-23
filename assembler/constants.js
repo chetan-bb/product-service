@@ -32,4 +32,11 @@ module.exports = {
     PROMO_OFFER_BY_CATEGORY: "promo-offers-cat",
     PROMO_OFFERS_BY_TYPE: "promo-offers-type",
     PROMO_OFFERS_FOR_YOU: "promo-offers-foryou",
+
+    BASE_IMAGE_URL: "https://www.bigbasket.com/media/uploads",
+
+    BUNDLE_PACK_CONST : {
+        ACTIVE: 0,
+        INACTIVE:1
+    }
 };

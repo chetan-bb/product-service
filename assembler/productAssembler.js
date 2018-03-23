@@ -5,12 +5,14 @@ const imageUtil = require('../service/imageUtil');
 const productController = require('../service/productService');
 const striptags = require('striptags');
 const CONSTANTS = require('./constants');
+const path = require('path');
 
 async function getProductDataForPdId(productDescId, masterRi) {
     try {
         let productPricingResultObject = await Promise.all([
-            productController.getProduct(productDescId, masterRi),
-            productController.getAllChildrenForPdId(productDescId, masterRi)]);
+            productController.getProduct(productDescId, masterRi)
+            //productController.getAllChildrenForPdId(productDescId, masterRi)
+        ]);
 
 
         let productResult = productPricingResultObject[0];
@@ -21,24 +23,23 @@ async function getProductDataForPdId(productDescId, masterRi) {
         }
 
         let childProductsResponse = [];
-        childProducts.forEach((productResult) => {
-            if(!productResult || productResult.isEmpty()){
-                return true; // same as continue in foreach loop
-            }
-            let result = generateProductDetailResponse(productResult.Product,
-                productResult.Price,
-                productResult.ProductDescriptionAttr,
-                productResult.ParentCategory,
-                productResult.ManualTagValues, productResult.AutoTagValues);
-            childProductsResponse.push(result);
-        });
+        // childProducts.forEach((productResult) => {
+        //     if(!productResult || productResult.isEmpty()){
+        //         return true; // same as continue in foreach loop
+        //     }
+        //     let result = generateProductDetailResponse(productResult.Product,
+        //         productResult.ProductDescriptionAttr,
+        //         productResult.ParentCategory,
+        //         productResult.ManualTagValues, productResult.AutoTagValues);
+        //     childProductsResponse.push(result);
+        // });
         let parentProductResponse = generateProductDetailResponse(productResult.Product,
-            productResult.Price,
             productResult.ProductDescriptionAttr,
             productResult.ParentCategory,
             productResult.ManualTagValues, productResult.AutoTagValues);
 
-        return Object.assign(parentProductResponse, {children: childProductsResponse});
+        return Object.assign(parentProductResponse, {children: childProductsResponse,
+            'base_img_url': process.env.BASEIMAGEURL || CONSTANTS.BASE_IMAGE_URL});
     } catch (err) {
         throw {status:500, message:err};
     }
@@ -46,11 +47,10 @@ async function getProductDataForPdId(productDescId, masterRi) {
 }
 
 
-function generateProductDetailResponse(Product, Price, ProductDescriptionAttr, ParentCategory,
+function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCategory,
                                              ManualTagValues, AutoTagValues) {
     //get data from service and assemble
     let responseGetters = [getProductData(Product),
-                                            getPricingData(Price),
                                             getProductImages(Product, ProductDescriptionAttr),
                                             getBrandData(Product),
                                             getCategoryData(Product),
@@ -124,10 +124,25 @@ function getProductImages(Product, ProductDescriptionAttr) {
     }
     console.log(secondaryImages);
 
-    let subUrl = primaryImageObj.subUrl;
-    let images = [primaryImageObj.imageName];
-    images = images.concat(secondaryImages);
-    return {images:images, subUrl:subUrl}
+    let images = [generateMultipleImageUrls(primaryImageObj.subUrl, primaryImageObj.imageName)];
+    let secondaryImagePath = secondaryImages.map((secondaryImageName) => {
+            return generateMultipleImageUrls(secondaryImageName.subUrl, secondaryImageName.imageName)
+        });
+    images = images.concat(secondaryImagePath);
+
+    return {images:images}
+}
+
+function generateMultipleImageUrls(subUrl, imageName, imageSize=['ml', 's', 'l']) {
+    let images = [];
+    for (let i = 0, len = imageSize.length; i < len; i++) {
+        let imageSizeUrls = [];
+        imageSizeUrls.push(path.join(subUrl, imageSize[i], imageName));
+        images.push({[imageSize[i]]:imageSizeUrls})
+    }
+
+
+    return images;
 }
 
 function getBrandData(Product) {
@@ -160,6 +175,8 @@ function getProductData(Product) {
          "desc": Product.description.call(Product),
         "pack_desc": Product.multipackDescription.call(Product) || Product.PackType.call(Product),
         "w": Product.weight.call(Product),
+        "mrp": Product.mrp,
+        "sp": Product.salePrice
     };
 }
 

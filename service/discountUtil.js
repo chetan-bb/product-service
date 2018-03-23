@@ -1,7 +1,7 @@
 const dataUtil = require('../datalayer/database');
 const util = require('../utils/util');
 const DISCOUNT_TYPE_PERCENTAGE = 'Percentage';
-const DISCOUNT_LABEL_PERCENTAGE_TAKES_PRIORITY_AFTER = 10
+const DISCOUNT_LABEL_PERCENTAGE_TAKES_PRIORITY_AFTER = 10;
 
 
 function getDiscountValueType(Product) {
@@ -40,7 +40,7 @@ function getDiscountValueType(Product) {
         dv = util.precisionRound(dis_val, 2).toString();
     }
 
-    return {"type": dt, "amount": dv}
+    return {"discount": {"type": dt, "value": dv}}
 }
 
 module.exports = {getDiscountValueType};

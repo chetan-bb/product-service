@@ -29,8 +29,5 @@ module.exports = (sequelize, DataTypes) => {
     };
 
 
-    ProductBundlePack.ACTIVE = 0;
-    ProductBundlePack.INACTIVE = 1;
-
     return ProductBundlePack;
 };

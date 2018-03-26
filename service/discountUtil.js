@@ -1,4 +1,3 @@
-const dataUtil = require('../datalayer/database');
 const util = require('../utils/util');
 const DISCOUNT_TYPE_PERCENTAGE = 'Percentage';
 const DISCOUNT_LABEL_PERCENTAGE_TAKES_PRIORITY_AFTER = 10;
@@ -31,7 +30,7 @@ function getDiscountValueType(Product) {
     // select based on weather percentage disc or amount disc will look catchy
     if(!dis_val && !dis_per){
         //when dis_val and dis_per both are 0
-        dv = ""
+        return {}
     }else if(dis_per > dis_val || dis_per > DISCOUNT_LABEL_PERCENTAGE_TAKES_PRIORITY_AFTER){
         dt = 'P';
         dv = util.precisionRound(dis_per, 2).toString();

@@ -30,17 +30,10 @@ describe("Function Unit test", function () {
     };
 
     describe("#getDiscountValueType() Negative test case with no discount value", function () {
-        it("should return discount value empty", function (done) {
+        it("should return Empty object", function (done) {
             const discountValueType = discountUtil.getDiscountValueType(Product);
             discountValueType.should.be.an('object');
-            expect(discountValueType).to.have.property('discount');
-            let discount = discountValueType.discount;
-            expect(discount).to.have.property('type');
-            expect(discount).to.have.property('value');
-
-
-            assert.equal(discount['type'], 'A');
-            assert.equal(discount['value'], '');
+            expect(discountValueType).to.not.have.property('discount');
             done();
         })
     });

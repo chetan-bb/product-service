@@ -109,14 +109,6 @@ describe("Function Unit test", function () {
         })
     });
 
-    describe("#getProductPrimaryImage() Negative test with Product as null", function () {
-        it("should return null ", function (done) {
-            const primaryImage = imageUtil.getProductPrimaryImage(null);
-            assert.equal(primaryImage, null);
-            done();
-        })
-    });
-
     describe("#getProductPrimaryImage() Negative test where ProductDescription version is 0", function () {
         it("should return empty object ", function (done) {
             Product.ProductDescription.version = 0;
@@ -202,31 +194,30 @@ describe("Function Unit test", function () {
                 " \"4\": {\"version\": 1, \"type\": \"s\"}}";
             let noWatermark = true;
             let ignoreShade = true;
-            const primaryImage = imageUtil.getProductSecondaryImages(Product.ProductDescription,
+            const secondaryImages = imageUtil.getProductSecondaryImages(Product.ProductDescription,
                 noWatermark, ignoreShade,
                 productDescriptionAttrStrVal);
             //console.log(primaryImage);
-            primaryImage.should.be.an('array');
-            expect(primaryImage).to.have.lengthOf(2); // size two as type=s and ignoreShade should not be added to secondary images
-            let imageName = primaryImage[0]['imageName'];
-            let subUrl = primaryImage[0]['subUrl'];
+            secondaryImages.should.be.an('array');
+            expect(secondaryImages).to.have.lengthOf(2); // size two as type=s and ignoreShade should not be added to secondary images
+            let imageName = secondaryImages[0]['imageName'];
+            let subUrl = secondaryImages[0]['subUrl'];
             assert.equal(subUrl, '/pnw/');
             assert.equal(imageName, 'MzE0MzE0NjQ5MA-3-jpg_1-fresho-onion.jpg');
             done();
         })
     });
 
-    describe("#getProductSecondaryImages() Negative with empty description attr", function () {
+    describe("#getProductSecondaryImages() With empty description attr", function () {
         it("should return a list of string", function (done) {
             let productDescriptionAttrStrVal = "";
             let noWatermark = false;
             let ignoreShade = true;
-            const primaryImage = imageUtil.getProductSecondaryImages(Product.ProductDescription,
+            const secondaryImages = imageUtil.getProductSecondaryImages(Product.ProductDescription,
                 noWatermark, ignoreShade,
                 productDescriptionAttrStrVal);
-            //console.log(primaryImage);
-            primaryImage.should.be.an('array');
-            expect(primaryImage).to.have.lengthOf(0);
+            secondaryImages.should.be.an('array');
+            expect(secondaryImages).to.have.lengthOf(0);
             done();
         })
     })

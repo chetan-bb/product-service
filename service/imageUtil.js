@@ -1,10 +1,10 @@
 const util = require('../utils/util');
+const assert = require('assert');
 
 
 function getProductPrimaryImage(Product, noWatermark = false) {
-    if (!Product || !Product.City) {
-        return null;
-    }
+    assert(Product, 'Product not defined');
+
     let imageSubPathImageName = {};
     let citySlug = Product.City.slug;
     if (Product.ProductBundlePack) {
@@ -19,6 +19,7 @@ function getProductPrimaryImage(Product, noWatermark = false) {
 }
 
 function getProductImageName(ProductDescription, version, noWaterMark) {
+    assert(ProductDescription, 'ProductDescription not defined');
     // assuming that images will always come from s3
 
     let imageName = {};
@@ -37,6 +38,7 @@ function getProductImageName(ProductDescription, version, noWaterMark) {
 
 
 function getProductSecondaryImages(ProductDescription, noWaterMark, ignoreShade, pdMeta) {
+    assert(ProductDescription, 'ProductDescription not defined');
     let imageList = [];
     let pdImageMetaData = [];
     if(pdMeta){

@@ -27,9 +27,37 @@ function decodeBase64(data_param) {
     }
 }
 
+function amountDisplay(amount){
+    if(amount || amount === 0){
+        if(isNaN(parseFloat(amount))){
+            return amount;
+        }
+        
+        let negative = false;
+        if( amount < 0) {
+            negative = true;
+            amount = amount * -1;
+        }
+        var multiplicator = Math.pow(10, 2);
+        amount = parseFloat((amount * multiplicator).toFixed(11));
+        amount = (Math.round(amount) / multiplicator).toFixed(2);
+        if( negative ) {    
+            amount = (amount * -1).toFixed(2);
+        }
+        amount = parseFloat(amount);        
+        amount = amount.toFixed(amount % 1 === 0 ? 0 : 2);
+        
+        return "" + amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "");
+    }
+    else{
+        return ""
+    }
+};
+
 module.exports = {
     precisionRound,
     encodeBase64,
     decodeBase64,
+    amountDisplay
 };
 

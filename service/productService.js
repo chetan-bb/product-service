@@ -1,7 +1,10 @@
+'use strict';
 const database = require('../datalayer/database');
 const tagUtil = require('./tagUtil');
 const util = require('../utils/util');
 const CONSTANTS = require('../assembler/constants');
+const assert = require('assert');
+const apiCall = require('./apiCall');
 
 
 /*
@@ -191,14 +194,14 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
     
     let comboDiscountBreakupDict = await getComboDiscountBreakupDict(parentProduct.Product.id, childProductsIdsList)
     debugger;
-    let comboSku = await getComboSku(comboDiscountBreakupDict, childProductsDict)
+    let comboSku = await getComboSku(comboDiscountBreakupDict, childProductsDict);
     
     
     let total_saving = 0;
     let child_product_savings = 0;
     let is_combo_dicount = false;
     let annotation_msg = '';
-    annotation_msg = await getAnnotationMsg(productDescriptionId, childIds, childProductsDict)
+    annotation_msg = await getAnnotationMsg(productDescriptionId, childIds, childProductsDict);
     let parentDict = {
         "total_mrp"     : util.amountDisplay(parentProduct.Product.mrp),
         "total_sp"      : util.amountDisplay(parentProduct.Product.salePrice)
@@ -213,7 +216,7 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
     console.log('Combo SKU - '+ childIds);
     for(let childId of childIds) {
         console.log(childId[0]);
-        let pd_id = childId[0]
+        let pd_id = childId[0];
         if(!comboSku[pd_id]){
             continue;
         }
@@ -235,15 +238,13 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
         let savings_oncombo = quantity_in_combo * (Number(childProductsDict[pd_id].mrp) - Number(comboSku[pd_id].sp))
         let saving_msg;
         if (savings_oncombo > 0 && (savings_oncombo > product_saving)){
-            savings_combo_str = String(savings_oncombo)
-            savings_oncombo = savings_combo_str
-            saving_msg = 'SAVE Rs '+ util.amountDisplay(savings_oncombo) +' With Combo'
+            let savings_combo_str = String(savings_oncombo);
+            savings_oncombo = savings_combo_str;
+            saving_msg = 'SAVE Rs '+ util.amountDisplay(savings_oncombo) +' With Combo';
             is_combo_dicount = true;
-        }
-        else if (product_saving > 0){
-            child_product_savings = child_product_savings + product_saving
-            product_saving_str = String(product_saving)
-            product_saving = product_saving_str
+        } else if (product_saving > 0){
+            child_product_savings = child_product_savings + product_saving;
+            product_saving = String(product_saving);
             saving_msg = 'SAVE Rs '+ util.amountDisplay(product_saving)
         }
         if (saving_msg){
@@ -280,8 +281,18 @@ async function getAllRelatedComboProductsForProductId(productDescriptionId) {
     console.log('Related combo SKU ids- '+ childIds);
 
     return await Promise.resolve(response);  
-};
+}
+
+async function getPromoData(productDescriptionId, masterRi, cityId, memberId, visitorId) {
+    assert(productDescriptionId, 'productDescriptionId not passed');
+    assert(util.isNumber(visitorId), 'visitor id must be a number');
+    try{
+            return await(apiCall.downloadPromoData(productDescriptionId, masterRi, cityId, memberId, visitorId));
+        }catch(err){
+            console.log(err);
+            return {};
+        }
+}
 
 module.exports = {getProduct, getAllChildrenForPdId, getAllComboProductsForProductId, 
-    getAllRelatedComboProductsForProductId, getAnnotationMsg, getComboSku, 
-    getComboChildProductsDict};
+    getAllRelatedComboProductsForProductId, getPromoData};

@@ -1,3 +1,5 @@
+'use strict';
+
 const Op = require('sequelize').Op;
 
 
@@ -128,7 +130,9 @@ async function getAllParentChildProductForProductId(productDescriptionId) {
         },
         attributes: ['parentId']
     });
-
+    if(!ProductParentChildObject){
+        return []
+    }
     let childIds = await process.dbModels.ProductParentChild.findAll({
         where: {
             parentId: ProductParentChildObject.parentId

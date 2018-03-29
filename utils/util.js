@@ -1,4 +1,6 @@
+'use strict';
 const bigInt = require("big-integer");
+const underscore = require("underscore");
 
 
 function precisionRound(number, precision) {
@@ -54,10 +56,15 @@ function amountDisplay(amount){
     }
 };
 
+function isNumber(obj) {
+    return !underscore.isNaN(Number(obj));
+}
+
 module.exports = {
     precisionRound,
     encodeBase64,
     decodeBase64,
-    amountDisplay
+    amountDisplay,
+    isNumber
 };
 

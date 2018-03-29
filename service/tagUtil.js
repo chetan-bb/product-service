@@ -1,3 +1,4 @@
+'use strict';
 module.exports.createTagObject = (tagValueList) => {
     let tagGroupAndTagValues = {};
     tagValueList.forEach((tagValue) => {

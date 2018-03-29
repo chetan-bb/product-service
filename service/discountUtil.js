@@ -1,3 +1,4 @@
+'use strict';
 const util = require('../utils/util');
 const DISCOUNT_TYPE_PERCENTAGE = 'Percentage';
 const DISCOUNT_LABEL_PERCENTAGE_TAKES_PRIORITY_AFTER = 10;

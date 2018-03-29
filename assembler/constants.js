@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
     PRODUCT_LIST: "product_list",
     CATEGORY: "pc",

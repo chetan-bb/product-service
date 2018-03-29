@@ -8,20 +8,22 @@ const CONSTANTS = require('./constants');
 const util = require('../utils/util');
 const path = require('path');
 
-async function getProductDataForPdId(productDescId, masterRi) {
+async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, visitorId) {
     try {
         let productPricingResultObject = await Promise.all([
             productController.getProduct(productDescId, masterRi),
             productController.getAllChildrenForPdId(productDescId, masterRi),
             productController.getAllComboProductsForProductId(productDescId, masterRi),
-            productController.getAllRelatedComboProductsForProductId(productDescId)
+            productController.getAllRelatedComboProductsForProductId(productDescId),
+            productController.getPromoData(productDescId, masterRi, cityId, memberId, visitorId)
         ]);
 
         let productResult = productPricingResultObject[0];
         let childProducts = productPricingResultObject[1];
         let comboResult = productPricingResultObject[2];
         let additionDestination = productPricingResultObject[3];
-        
+        let promoSaleResult = productPricingResultObject[4];
+
         if (!productResult || productResult.isEmpty()) {
             throw `Product not found for given pd id ${productDescId} and masterRi ${masterRi}`;
         }
@@ -36,7 +38,8 @@ async function getProductDataForPdId(productDescId, masterRi) {
                 let result = generateProductDetailResponse(productResult.Product,
                     productResult.ProductDescriptionAttr,
                     productResult.ParentCategory,
-                    productResult.ManualTagValues, productResult.AutoTagValues);
+                    productResult.ManualTagValues, productResult.AutoTagValues,
+                    promoSaleResult[productResult.Product.id]);
                 childProductsResponse.push(result);
             });
         }
@@ -44,7 +47,7 @@ async function getProductDataForPdId(productDescId, masterRi) {
             productResult.ProductDescriptionAttr,
             productResult.ParentCategory,
             productResult.ManualTagValues, productResult.AutoTagValues,
-            comboResult, additionDestination);
+            comboResult, additionDestination, promoSaleResult[productResult.Product.id]);
 
         return Object.assign(parentProductResponse, {children: childProductsResponse,
             'base_img_url': process.env.BASEIMAGEURL || CONSTANTS.BASE_IMAGE_URL});
@@ -56,13 +59,26 @@ async function getProductDataForPdId(productDescId, masterRi) {
 
 
 function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCategory,
-                                             ManualTagValues, AutoTagValues,ComboResult,AdditionDestination) {
+                                             ManualTagValues, AutoTagValues,
+                                       ComboResult, AdditionDestination, promoSaleData) {
+    // promo and sale data from python layer
+    let promoData = {};
+    let saleInfo = {};
+    let product_attr = {};
+    let discount_price = null;
+    if(promoSaleData && !promoSaleData.isEmpty()){
+        promoData = promoSaleData['promo_data'];
+        saleInfo = promoSaleData['sale_info'];
+        product_attr = promoSaleData['product_attrs'];
+        discount_price = promoSaleData['discounted_prices'];
+    }
+
     //get data from service and assemble
-    let responseGetters = [getProductData(Product),
+    let responseGetters = [getProductData(Product, product_attr),
                                             getProductImages(Product, ProductDescriptionAttr),
                                             getBrandData(Product),
                                             getCategoryData(Product),
-                                            getDiscount(Product),
+                                            getDiscount(Product, product_attr),
                                             getProductAdditionalAttr(Product),
                                             getVariableWeightMsgAndLink(Product.ProductDescription,
                                                 ParentCategory, Product.City), //todo this city might be request city i think
@@ -71,9 +87,20 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
                                             getAdditionDestination(AdditionDestination)
                                             ];
     let response = {};
-    responseGetters.forEach((fn)=>{
+    responseGetters.forEach((fn) => {
         Object.assign(response, fn);
     });
+    if (promoData && !promoData.isEmpty()) {
+        Object.assign(response, {promo: promoData});
+    }
+    if (saleInfo && !saleInfo.isEmpty()) {
+        Object.assign(response, {sale: saleInfo});
+
+    }
+    if (discount_price) {
+        Object.assign(response, {discounted_price: discount_price});
+    }
+
     return response;
 }
 
@@ -170,19 +197,23 @@ function getCategoryData(Product) {
     }
 }
 
-function getDiscount(Product) {
-    return discountUtil.getDiscountValueType(Product)
+function getDiscount(Product, product_attr = {}) {
+    if (!product_attr.isEmpty()) {
+        return {"discount": {"type": product_attr['dis_t'], "value": product_attr['dis_val']}}
+    }
+    return discountUtil.getDiscountValueType(Product);
+
 }
 
 
-function getProductData(Product) {
+function getProductData(Product, product_attr={}) {//todo check Product.mrp must be equal to product_attr.mrp
     return {
         "id": Product.ProductDescription.id,
-         "desc": Product.description.call(Product),
+        "desc": Product.description.call(Product),
         "pack_desc": Product.multipackDescription.call(Product) || Product.PackType.call(Product),
         "w": Product.weight.call(Product),
         "mrp": Product.mrp,
-        "sp": Product.salePrice
+        "sp": product_attr['sp'] ? product_attr['sp']: Product.salePrice
     };
 }
 

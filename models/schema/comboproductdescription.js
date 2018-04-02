@@ -41,7 +41,7 @@ module.exports = function (sequelize, DataTypes) {
         
         //COMBO_TYPE
         ComboProductDescription.SINGLE_SKU = 0;
-        ComboProductDescription.MULTI_SKU = 1
+        ComboProductDescription.MULTI_SKU = 1;
 
     return ComboProductDescription;
 };

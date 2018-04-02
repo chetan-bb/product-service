@@ -1,11 +1,14 @@
 'use strict';
 const database = require('../datalayer/database');
 const tagUtil = require('./tagUtil');
+const imageUtil = require('./imageUtil');
+const absoluteUrlUtil = require('./absoluteUrlUtil');
 const util = require('../utils/util');
 const CONSTANTS = require('../assembler/constants');
 const assert = require('assert');
 const apiCall = require('./apiCall');
 
+const request = require('request');
 
 /*
 This is responsible to call data-layer and get json object from there
@@ -23,6 +26,7 @@ async function getProduct(productDescriptionId, masterRi) {
     let ManualTagValues = null;
     let AutoTagValues = null;
     let Supplier = null;
+    let CosmeticDescription = null;
     if (Product) {
         let resultBundlePackPDMetaParentCategory = await getProductRelatedDataAsync(Product);
         console.log(resultBundlePackPDMetaParentCategory);
@@ -37,8 +41,11 @@ async function getProduct(productDescriptionId, masterRi) {
         ManualTagValues  = tagUtil.createTagObject(resultBundlePackPDMetaParentCategory.ManualTagValues);
         AutoTagValues = tagUtil.createTagObject(resultBundlePackPDMetaParentCategory.AutoTagValues);
         Supplier = await database.getSupplier(Product.supplier_id);
+        CosmeticDescription = await cosmeticProductDetails(ManualTagValues, Product,
+            resultBundlePackPDMetaParentCategory.ProductDescriptionAttr)
     }
-    return {Product, ProductDescriptionAttr, ParentCategory, ManualTagValues, AutoTagValues, Supplier}
+    return {Product, ProductDescriptionAttr, ParentCategory, ManualTagValues, AutoTagValues,
+         Supplier, CosmeticDescription}
 }
 
 
@@ -71,35 +78,31 @@ async function getAllChildrenForPdId(productDescriptionId, masterRi) {
 
 }
 
-async function getAnnotationMsg(productDescriptionId, childIds, childProductsDict){
-    let is_combo_product = await database.isComboProduct(productDescriptionId) 
+async function getAnnotationMsg(productDescriptionId, childIds, childProductsDict, isSingleSkuCombo){
     let annotationmsg = undefined;
-    if(is_combo_product === false){
-        return Promise.resolve(annotationmsg);
-    }
-    let is_single_sku_combo = await database.isSingleSkuComboProduct(productDescriptionId)
-    if(is_single_sku_combo === false){
+    
+    if(isSingleSkuCombo === false){
         annotationmsg = CONSTANTS.ANNOTATION_TYPES[CONSTANTS.WILL_GO_TOGETHER];
         return Promise.resolve(annotationmsg);
     }
-    let fi_type_list = []
-    childIdsSet = childIds.filter(function(elem, pos) {
+    let fiTypeList = [];
+    let childIdsSet = childIds.filter(function(elem, pos) {
         return childIds.indexOf(elem) == pos;
-    })
+    });
     for (let childid of childIdsSet){
         let supplier = childProductsDict[childid[0]]["supplier"];
-        fi_type_list.push(supplier.FulfillmentInfo.fulfillment_type)
+        fiTypeList.push(supplier.FulfillmentInfo.fulfillment_type)
     }
-    fi_type_set = fi_type_list.filter(function(elem, pos) {
-        return fi_type_list.indexOf(elem) == pos;
-    })
-    if(fi_type_set.length == 1){
+    let fiTypeSet = fiTypeList.filter(function(elem, pos) {
+        return fiTypeList.indexOf(elem) == pos;
+    });
+    if(fiTypeSet.length === 1){
         annotationmsg = CONSTANTS.ANNOTATION_TYPES[CONSTANTS.WILL_GO_TOGETHER];
         return Promise.resolve(annotationmsg);
     }
-    if(fi_type_set.length === childIdsSet.length && childIdsSet.length>0){
-        if(fi_type_set.find(CONSTANTS.FI_TYPE[CONSTANTS.FI_TYPE_NORMAL]) 
-            || fi_type_set.find(CONSTANTS.FI_TYPE[CONSTANTS.FI_TYPE_EXPRESS])){
+    if(fiTypeSet.length === childIdsSet.length && childIdsSet.length>0){
+        if(fiTypeSet.find(CONSTANTS.FI_TYPE[CONSTANTS.FI_TYPE_NORMAL]) 
+            || fiTypeSet.find(CONSTANTS.FI_TYPE[CONSTANTS.FI_TYPE_EXPRESS])){
             annotationmsg = CONSTANTS.ANNOTATION_TYPES[CONSTANTS.MAY_GO_SEPARATELY];     
             return Promise.resolve(annotationmsg);       
         }
@@ -112,7 +115,6 @@ async function getAnnotationMsg(productDescriptionId, childIds, childProductsDic
         annotationmsg = CONSTANTS.ANNOTATION_TYPES[CONSTANTS.MAY_GO_SEPARATELY];
         return Promise.resolve(annotationmsg);   
     }
-    return await Promise.resolve(annotationmsg);
 }
 
 function buildChildProductDict(childProductsDict, childProduct, quantity){
@@ -124,22 +126,30 @@ function buildChildProductDict(childProductsDict, childProduct, quantity){
     }
 };
 
+function buildChildImageUrlDict(childProductsImageDict, product, productDescriptionAttr){
+    childProductsImageDict[product.ProductDescription.id] = {
+        "image": imageUtil.getProductPrimaryImage(product, productDescriptionAttr),
+        "link": absoluteUrlUtil.getProductAbsoluteUrl(product.ProductDescription)            
+    }
+}
+
 async function getComboChildProductsDict(childIds, masterRi){
     let childProductsDict = {};
+    let childProductsImageDict = {};    
     let childProductsIdsList = [];
     for(let childId of childIds){
         let childProduct = await getProduct(childId[0], masterRi);
         if(childProduct.Product) {
             buildChildProductDict(childProductsDict, childProduct, childId[1])
+            buildChildImageUrlDict(childProductsImageDict, childProduct.Product, childProduct.ProductDescriptionAttr)
             childProductsIdsList.push(childProduct.Product.id);
         }
     };
-    return await Promise.resolve([childProductsDict, childProductsIdsList]);
+    return await Promise.resolve([childProductsDict, childProductsIdsList, childProductsImageDict]);
 }
 
-async function getComboDiscountBreakupDict(parent_product_id, child_product_ids){
+async function getComboDiscountBreakupDict(comboDiscountBreakupList){
     let comboDiscountBreakupDict = {};
-    let comboDiscountBreakupList = await database.getComboPcForParentCombo(parent_product_id, child_product_ids);
     for(let cdbd of comboDiscountBreakupList){
         comboDiscountBreakupDict[cdbd.CurrentDiscount.ChildProduct.product_description_id] = {
             "discount_type"         : cdbd.CurrentDiscount.discount_type,
@@ -151,7 +161,6 @@ async function getComboDiscountBreakupDict(parent_product_id, child_product_ids)
 
 async function getComboSku(comboDiscountBreakupDict, childProductsDict){
     let comboSku = {};
-    debugger;
     for(let cdbd in comboDiscountBreakupDict){
         if (comboDiscountBreakupDict.hasOwnProperty(cdbd)) {           
             let cdbd_key = cdbd;
@@ -191,9 +200,10 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
     let childProductResult = await getComboChildProductsDict(childIds, masterRi);
     let childProductsDict = childProductResult[0];
     let childProductsIdsList = childProductResult[1];
-    
-    let comboDiscountBreakupDict = await getComboDiscountBreakupDict(parentProduct.Product.id, childProductsIdsList)
-    debugger;
+    let childProductsImageDict = childProductResult[2];
+
+    let comboDiscountBreakupList = await database.getComboPcForParentCombo(parentProduct.Product.id, childProductsIdsList);
+    let comboDiscountBreakupDict = await getComboDiscountBreakupDict(comboDiscountBreakupList);
     let comboSku = await getComboSku(comboDiscountBreakupDict, childProductsDict);
     
     
@@ -201,7 +211,11 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
     let child_product_savings = 0;
     let is_combo_dicount = false;
     let annotation_msg = '';
-    annotation_msg = await getAnnotationMsg(productDescriptionId, childIds, childProductsDict);
+    let is_combo_product = await database.isComboProduct(productDescriptionId);
+    let is_single_sku_combo = await database.isSingleSkuComboProduct(productDescriptionId);
+    if(is_combo_product){
+        annotation_msg = await getAnnotationMsg(productDescriptionId, childIds, childProductsDict, is_single_sku_combo);    
+    }
     let parentDict = {
         "total_mrp"     : util.amountDisplay(parentProduct.Product.mrp),
         "total_sp"      : util.amountDisplay(parentProduct.Product.salePrice)
@@ -213,10 +227,8 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
         parentDict.total_saving_msg = total_saving;
     }
     let comboProducts = [];
-    console.log('Combo SKU - '+ childIds);
     for(let childId of childIds) {
-        console.log(childId[0]);
-        let pd_id = childId[0];
+        let pd_id = childId[0]
         if(!comboSku[pd_id]){
             continue;
         }
@@ -250,6 +262,8 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
         if (saving_msg){
             comboProductDict['saving_msg'] = saving_msg
         }
+        comboProductDict["img_url"] = childProductsImageDict[pd_id]["image"];
+        comboProductDict["link"] = childProductsImageDict[pd_id]["link"];
         comboProducts.push(comboProductDict);
     };
     parentDict["items"] = comboProducts;
@@ -294,5 +308,42 @@ async function getPromoData(productDescriptionId, masterRi, cityId, memberId, vi
         }
 }
 
+
+async function getAllAvailabilityInfo(productDescriptionId, masterRi, visitorId, memberId) {
+    assert(productDescriptionId, 'productDescriptionId not passed');
+    assert(util.isNumber(visitorId), 'visitor id must be a number');
+    try{
+        return await(apiCall.downloadAllAvailabilityInfo(productDescriptionId, 
+            masterRi, visitorId, memberId ));
+    }catch(err){
+        console.log(err);
+        return {};
+    }
+}
+
+async function cosmeticProductDetails(manualTags, product, productAttr){
+    let retDict = {
+        isCosmetic :false
+    };
+    // TODO: This structure changes slightly for listing call and detail call
+    // Need to take details or not param and change few things later
+    // Need to get childskus here for best performance
+    if (manualTags.hasOwnProperty(CONSTANTS.COSMETIC_STORE_TAG_GROUP)){
+        let tagValue = manualTags[CONSTANTS.COSMETIC_STORE_TAG_GROUP][0]
+        if(tagValue.tagValue === CONSTANTS.COSMETIC_STORE_TAG_VALUE){
+            retDict = {
+                isCosmetic      : true,
+                type            : CONSTANTS.COSMETIC_STORE_TAG_GROUP,
+                sub_type        : CONSTANTS.COSMETIC_STORE_TAG_VALUE,
+                shadeImageUrl     : imageUtil.getShadeImage(product.ProductDescription,
+                     productAttr)
+            }
+        }
+    }
+    return await Promise.resolve(retDict);
+}
+
 module.exports = {getProduct, getAllChildrenForPdId, getAllComboProductsForProductId, 
-    getAllRelatedComboProductsForProductId, getPromoData};
+    getAllRelatedComboProductsForProductId, getPromoData, 
+    getAnnotationMsg, getComboSku, 
+    getComboChildProductsDict, getAllAvailabilityInfo};

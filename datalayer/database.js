@@ -4,7 +4,7 @@ const Op = require('sequelize').Op;
 
 
 async function getProductFromDB(productDescriptionId, masterRi) {
-
+    
     return await process.dbModels.Product.findOne({
         where: {
             reservation_info_id: masterRi, //todo handle this
@@ -150,7 +150,7 @@ async function isComboProduct(productDescriptionId) {
             status: process.dbModels.ComboProductDescription.ACTIVE,
             parent_combo_sku_id: productDescriptionId
         }
-        })
+        });
     if(comboProducts.length>0){
         return true;
     }
@@ -166,7 +166,7 @@ async function isSingleSkuComboProduct(productDescriptionId) {
             combo_type: process.dbModels.ComboProductDescription.SINGLE_SKU,
             parent_combo_sku_id: productDescriptionId
         }
-    })
+    });
     if(comboProducts.length>0){
         return true;
     }
@@ -194,7 +194,7 @@ async function getAllComboProductsForProductId(productDescriptionId) {
                 ]
             }
         ]
-        })
+        });
 
     return Array.from(new Set(comboProducts.map((child)=> [child.dataValues.child_sku_id,child.dataValues.quantity, child.ChildProductDescription.dataValues])));
 }
@@ -206,17 +206,17 @@ async function getAllRelatedComboProductsForProductId(productDescriptionId) {
             child_sku_id: productDescriptionId
         },
         attributes: ['parent_combo_sku_id']
-    })
+    });
     return Array.from(new Set(relatedComboProducts.map((child)=> child.dataValues.parent_combo_sku_id)));
 }
 
-async function getComboPcForParentCombo(parentProductId, child_product_list){
-    let combo_discount_breakups = await process.dbModels.ComboPc.findAll({
+async function getComboPcForParentCombo(parentProductId, childProductList){
+    let comboDiscountBreakups = await process.dbModels.ComboPc.findAll({
         where: {
             // status: process.dbModels.ComboPc.ACTIVE,
             combo_parent_product_id: parentProductId,
             combo_child_product_id: {
-                [Op.in] : child_product_list
+                [Op.in] : childProductList
             }
         },
         include:[
@@ -231,8 +231,8 @@ async function getComboPcForParentCombo(parentProductId, child_product_list){
                 ]
             }
         ]
-    })
-    return combo_discount_breakups;
+    });
+    return comboDiscountBreakups;
 }
 
 let dataBase = {getProductFromDB, getProductDescMetaData,

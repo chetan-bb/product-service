@@ -58,5 +58,10 @@ module.exports = {
     BUNDLE_PACK_CONST : {
         ACTIVE: 0,
         INACTIVE:1
-    }
+    },
+
+    COSMETIC_CHILDREN_DISPLAY_COUNT : 5,
+    COSMETIC_STORE_TAG_GROUP : 'parent_child_variant_type',
+    COSMETIC_STORE_TAG_VALUE : 'colour'
+    
 };

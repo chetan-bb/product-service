@@ -73,6 +73,36 @@ function getProductSecondaryImages(ProductDescription, noWaterMark, ignoreShade,
     return imageList;
 }
 
+function getShadeImage(ProductDescription, pdMeta) {
+    assert(ProductDescription, 'ProductDescription not defined');
+    let imageList = [];
+    let pdImageMetaData = [];
+    if(pdMeta){
+        pdImageMetaData = JSON.parse(JSON.parse(JSON.stringify(pdMeta)).strValue);
+    }
+    let brandSlug = ProductDescription.brandSlug.call(ProductDescription);
+    let imagePathAndName = {};
+    for(let metaData in pdImageMetaData){
+        if (pdImageMetaData.hasOwnProperty(metaData)) {  
+            let version = pdImageMetaData[metaData].version;
+            let imageType = pdImageMetaData[metaData].type;
+            if(imageType === 's'){
+                let imagePath = `${ProductDescription.id}-${metaData}`;
+                let pdSlug = ProductDescription.slug.toLowerCase();
+                if(imageType.length > 0){
+                    imagePath = `${imagePath}-${imageType}`;
+                }
+                if(version !== 0){
+                    imagePathAndName = {subUrl: '/p/', imageName:`${imagePath}_${version}.jpg`};               
+                }
+                return imagePathAndName;
+            }
+        }
+    }   
+
+    return imagePathAndName;
+}
+
 
 
 function generateRawImageFileName(baseFile) {
@@ -93,5 +123,6 @@ function generateRawImageFileName(baseFile) {
 
 module.exports = {
     getProductPrimaryImage,
-    getProductSecondaryImages
+    getProductSecondaryImages,
+    getShadeImage
 };

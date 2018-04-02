@@ -42,7 +42,7 @@ initDB.dbInstance.authenticate()
         console.error('Unable to connect to the database:', err);
     });
 
-
+    
 function setDBInstanceModels() {
     process.dbInstance = initDB.dbInstance;
     process.dbModels = initDB.dbModels;

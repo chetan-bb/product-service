@@ -22,26 +22,26 @@ module.exports = function (sequelize, DataTypes) {
     // };
 
     // Fulfillmentinfo type enums
-    FulfillmentInfo.NORMAL = 'normal'
-    FulfillmentInfo.IRCDC = 'ircdc'
-    FulfillmentInfo.EXPRESS = 'express'
-    FulfillmentInfo.DROP = 'drop'
-    FulfillmentInfo.INSTITUTIONAL = 'institutional'
-    FulfillmentInfo.KIRANA_BULK = 'kirana-bulk'
-    FulfillmentInfo.KIRANA_PERISHABLE = 'kirana-perishable'
-    FulfillmentInfo.KIRANA_JIT = 'kirana-jit'
-    FulfillmentInfo.MARKET_PLACE = "marketplace"
-    FulfillmentInfo.MARKET_PLACE_1 = "marketplace_1"
-    FulfillmentInfo.NGO = "ngo"
-    FulfillmentInfo.HUL = "HUL"
-    FulfillmentInfo.JIT = "jit"
-    FulfillmentInfo.DARKSTORE = 'darkstore-express'
+    FulfillmentInfo.NORMAL = 'normal';
+    FulfillmentInfo.IRCDC = 'ircdc';
+    FulfillmentInfo.EXPRESS = 'express';
+    FulfillmentInfo.DROP = 'drop';
+    FulfillmentInfo.INSTITUTIONAL = 'institutional';
+    FulfillmentInfo.KIRANA_BULK = 'kirana-bulk';
+    FulfillmentInfo.KIRANA_PERISHABLE = 'kirana-perishable';
+    FulfillmentInfo.KIRANA_JIT = 'kirana-jit';
+    FulfillmentInfo.MARKET_PLACE = "marketplace";
+    FulfillmentInfo.MARKET_PLACE_1 = "marketplace_1";
+    FulfillmentInfo.NGO = "ngo";
+    FulfillmentInfo.HUL = "HUL";
+    FulfillmentInfo.JIT = "jit";
+    FulfillmentInfo.DARKSTORE = 'darkstore-express';
     // EXPRESS_STATIC_SLOTTED = 'exp-static-slotted'
-    FulfillmentInfo.SPECIALITY = 'speciality-express'
-    FulfillmentInfo.SPECIALITY_CHILD = 'speciality-child-express'
-    FulfillmentInfo.GIFTPREWRAP = 'gift-prewrap'
-    FulfillmentInfo.INSTITUTIONAL_JIT = 'institutional-jit'
-    FulfillmentInfo.DS_JIT = 'ds-jit'
+    FulfillmentInfo.SPECIALITY = 'speciality-express';
+    FulfillmentInfo.SPECIALITY_CHILD = 'speciality-child-express';
+    FulfillmentInfo.GIFTPREWRAP = 'gift-prewrap';
+    FulfillmentInfo.INSTITUTIONAL_JIT = 'institutional-jit';
+    FulfillmentInfo.DS_JIT = 'ds-jit';
     FulfillmentInfo.DARKSTORE_EXPRESS_ONLY ='darkstore-express-only';
     // FULFILLMENT_COMPANY_TYPE = (
     //     (NORMAL, 'Normal'),

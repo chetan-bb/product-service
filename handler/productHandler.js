@@ -19,7 +19,8 @@ module.exports = function productDetailHandler(req, res) {
             });
         }).catch((err) => {
         res.status(err.status || 500).json({
-            "status": -1, "message": err.message
+            "status": -1, "message": err.message,
+            "stack":err.stack
         });
     });
 };

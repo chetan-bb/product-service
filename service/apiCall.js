@@ -27,4 +27,30 @@ function downloadPromoData(productDescriptionId, masterRi, cityId, memberId, vis
     });
 }
 
-module.exports = {downloadPromoData};
+function downloadAllAvailabilityInfo(productDescriptionId, masterRi, visitorId, memberId){
+    return new Promise((resolve, reject)=>{
+        process.env.HOST = 'https://qas6.bigbasket.com/'; // todo remove this        
+        let query = util.isNumber(memberId) ? `?member_id=${memberId}` : '';
+        let url = urlJoiner(process.env.HOST, '/api/availability/',
+            `/${productDescriptionId}/${visitorId}/${masterRi}/`, query);
+        request.get(url, function (err, response, body) {
+            if (!err && response.statusCode === 200) {
+                try {
+                    resolve(JSON.parse(body));
+                } catch (ex) {
+                    resolve({
+                        'contextual_children':[],
+                        'availability_details':{}
+                    });
+                }
+            } else {
+                resolve({
+                    'contextual_children':[],
+                    'availability_details':{}
+                });
+            }
+        });
+    }); 
+};
+
+module.exports = {downloadPromoData, downloadAllAvailabilityInfo};

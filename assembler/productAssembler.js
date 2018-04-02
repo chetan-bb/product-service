@@ -2,6 +2,7 @@
 
 const discountUtil = require('../service/discountUtil');
 const imageUtil = require('../service/imageUtil');
+const contextualChildrenfilterUtil = require('../service/contextualChildrenFilter');
 const productController = require('../service/productService');
 const striptags = require('striptags');
 const CONSTANTS = require('./constants');
@@ -15,31 +16,43 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
             productController.getAllChildrenForPdId(productDescId, masterRi),
             productController.getAllComboProductsForProductId(productDescId, masterRi),
             productController.getAllRelatedComboProductsForProductId(productDescId),
-            productController.getPromoData(productDescId, masterRi, cityId, memberId, visitorId)
+            productController.getPromoData(productDescId, masterRi, cityId, memberId, visitorId),
+            productController.getAllAvailabilityInfo(productDescId, masterRi, visitorId)
         ]);
-
         let productResult = productPricingResultObject[0];
         let childProducts = productPricingResultObject[1];
         let comboResult = productPricingResultObject[2];
         let additionDestination = productPricingResultObject[3];
         let promoSaleResult = productPricingResultObject[4];
-
+        
+        let contextualChildren = productPricingResultObject[5]['contextual_children'];
+        let availabilityInfo = productPricingResultObject[5]['availability_details'];
+        
         if (!productResult || productResult.isEmpty()) {
             throw `Product not found for given pd id ${productDescId} and masterRi ${masterRi}`;
         }
 
+        childProducts = contextualChildrenfilterUtil.filterChildren(childProducts, 
+            contextualChildren, productResult.Product);
+        
+        productResult.CosmeticDescription['childProducts'] = childProducts;
+        productResult.CosmeticDescription['parent_product_desc'] = productDescId;
+
         let childProductsResponse = [];
         if (childProducts) {
-
-            childProducts.forEach((productResult) => {
-                if (!productResult || productResult.isEmpty()) {
+            childProducts.forEach((childResult) => {
+                if (!childResult || childResult.isEmpty()) {
                     return true; // same as continue in foreach loop
                 }
-                let result = generateProductDetailResponse(productResult.Product,
-                    productResult.ProductDescriptionAttr,
-                    productResult.ParentCategory,
-                    productResult.ManualTagValues, productResult.AutoTagValues,
-                    promoSaleResult[productResult.Product.id]);
+                childResult.CosmeticDescription['childProducts'] = childProducts;
+                childResult.CosmeticDescription['parent_product_desc'] = productDescId;
+                let result = generateProductDetailResponse(childResult.Product,
+                    childResult.ProductDescriptionAttr,
+                    childResult.ParentCategory,
+                    childResult.ManualTagValues, childResult.AutoTagValues,
+                    promoSaleResult[childResult.Product.id],
+                    childResult.CosmeticDescription, 
+                    availabilityInfo[childResult.Product.id]);
                 childProductsResponse.push(result);
             });
         }
@@ -47,7 +60,10 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
             productResult.ProductDescriptionAttr,
             productResult.ParentCategory,
             productResult.ManualTagValues, productResult.AutoTagValues,
-            comboResult, additionDestination, promoSaleResult[productResult.Product.id]);
+            promoSaleResult[productResult.Product.id],
+            productResult.CosmeticDescription, 
+            availabilityInfo[productResult.Product.id],
+            comboResult, additionDestination);
 
         return Object.assign(parentProductResponse, {children: childProductsResponse,
             'base_img_url': process.env.BASEIMAGEURL || CONSTANTS.BASE_IMAGE_URL});
@@ -59,8 +75,11 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
 
 
 function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCategory,
-                                             ManualTagValues, AutoTagValues,
-                                       ComboResult, AdditionDestination, promoSaleData) {
+                                    ManualTagValues, AutoTagValues, 
+                                    promoSaleData, cosmeticDescription,
+                                    availabilityInfo,
+                                    comboResult = {},
+                                    additionDestination = {}) {
     // promo and sale data from python layer
     let promoData = {};
     let saleInfo = {};
@@ -72,7 +91,6 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
         product_attr = promoSaleData['product_attrs'];
         discount_price = promoSaleData['discounted_prices'];
     }
-
     //get data from service and assemble
     let responseGetters = [getProductData(Product, product_attr),
                                             getProductImages(Product, ProductDescriptionAttr),
@@ -83,8 +101,10 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
                                             getVariableWeightMsgAndLink(Product.ProductDescription,
                                                 ParentCategory, Product.City), //todo this city might be request city i think
                                             getProductTags(ManualTagValues, AutoTagValues),
-                                            getComboResult(ComboResult),
-                                            getAdditionDestination(AdditionDestination)
+                                            getCosmeticResult(cosmeticDescription),
+                                            getAllAvailabilityInfo(availabilityInfo),
+                                            getComboResult(comboResult),
+                                            getAdditionDestination(additionDestination)
                                             ];
     let response = {};
     responseGetters.forEach((fn) => {
@@ -149,7 +169,11 @@ function getProductTags(ManualTagValues, AutoTagValues) {
 function getProductImages(Product, ProductDescriptionAttr) {
     let primaryImageObj = imageUtil.getProductPrimaryImage(Product);
     console.log(primaryImageObj);
-    if(!primaryImageObj) return {images:[]};
+    if(!primaryImageObj || primaryImageObj.isEmpty()){
+        return {
+            images:[]
+        };
+    } 
 
     let noWatermark = false;
     let ignoreShade = true;
@@ -304,6 +328,50 @@ function getVariableWeightMsg(ProductDescription, ParentCategory, CAP_VARIABLE_W
         return `Please note that ${productType} items will be billed based on exact weight during order `+
         `processing (in case the actual weight exceeds the requested weight by more than ${CAP_VARIABLE_WEIGHT}%, `+
         `you will be charged only for ${CAP_VARIABLE_WEIGHT}% excess weight).`
+    }
+}
+
+function getCosmeticResult(cosmeticDescription){
+    if(cosmeticDescription.isCosmetic === false ||
+        cosmeticDescription.childProducts.length < 1){
+        return {
+            attrs:{}
+        }
+    }
+    else {
+        delete cosmeticDescription.isCosmetic;
+        let dict = cosmeticDescription;
+        let shadeImageUrl = generateMultipleImageUrls(cosmeticDescription.shade_img_url.subUrl,
+            cosmeticDescription.shade_img_url.imageName,["s"]);
+        cosmeticDescription["shade_img_url"] = shadeImageUrl["s"];            
+        let children = cosmeticDescription.childProducts;
+        delete cosmeticDescription.childProducts;
+
+        if (children.length == 1){
+            dict.label = children.length + " more shade";             
+        }
+        else{
+            dict.label = children.length + " more shades";             
+        }
+        
+        dict.skus = Array.from(children.map((child)=> child.Product.ProductDescription.id));
+        dict.skus.push(cosmeticDescription.parent_product_desc);
+        return {
+            attrs: {dict}
+        } 
+    }
+}
+
+function getAllAvailabilityInfo(storeAvailability){
+    if(storeAvailability && !storeAvailability.isEmpty()){
+        return {
+            "store_availability":storeAvailability['store_availability']
+        };
+    }
+    else{
+        return {
+            "store_availability":[]
+        };
     }
 }
 

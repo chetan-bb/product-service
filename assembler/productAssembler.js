@@ -117,7 +117,7 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
         Object.assign(response, {sale: saleInfo});
 
     }
-    if (discount_price) {
+    if (discount_price && !discount_price.isEmpty()) {
         Object.assign(response, {discounted_price: discount_price});
     }
 

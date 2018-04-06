@@ -2,6 +2,7 @@
 const database = require('../datalayer/database');
 const tagUtil = require('./tagUtil');
 const imageUtil = require('./imageUtil');
+const absoluteUrlUtil = require('./absoluteUrlUtil');
 const util = require('../utils/util');
 const CONSTANTS = require('../assembler/constants');
 const assert = require('assert');
@@ -125,17 +126,26 @@ function buildChildProductDict(childProductsDict, childProduct, quantity){
     }
 };
 
+function buildChildImageUrlDict(childProductsImageDict, product, productDescriptionAttr){
+    childProductsImageDict[product.ProductDescription.id] = {
+        "image": imageUtil.getProductPrimaryImage(product, productDescriptionAttr),
+        "link": absoluteUrlUtil.getProductAbsoluteUrl(product.ProductDescription)            
+    }
+}
+
 async function getComboChildProductsDict(childIds, masterRi){
     let childProductsDict = {};
+    let childProductsImageDict = {};    
     let childProductsIdsList = [];
     for(let childId of childIds){
         let childProduct = await getProduct(childId[0], masterRi);
         if(childProduct.Product) {
             buildChildProductDict(childProductsDict, childProduct, childId[1])
+            buildChildImageUrlDict(childProductsImageDict, childProduct.Product, childProduct.ProductDescriptionAttr)
             childProductsIdsList.push(childProduct.Product.id);
         }
     };
-    return await Promise.resolve([childProductsDict, childProductsIdsList]);
+    return await Promise.resolve([childProductsDict, childProductsIdsList, childProductsImageDict]);
 }
 
 async function getComboDiscountBreakupDict(comboDiscountBreakupList){
@@ -190,7 +200,8 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
     let childProductResult = await getComboChildProductsDict(childIds, masterRi);
     let childProductsDict = childProductResult[0];
     let childProductsIdsList = childProductResult[1];
-    
+    let childProductsImageDict = childProductResult[2];
+
     let comboDiscountBreakupList = await database.getComboPcForParentCombo(parentProduct.Product.id, childProductsIdsList);
     let comboDiscountBreakupDict = await getComboDiscountBreakupDict(comboDiscountBreakupList);
     let comboSku = await getComboSku(comboDiscountBreakupDict, childProductsDict);
@@ -251,6 +262,8 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
         if (saving_msg){
             comboProductDict['saving_msg'] = saving_msg
         }
+        comboProductDict["img_url"] = childProductsImageDict[pd_id]["image"];
+        comboProductDict["link"] = childProductsImageDict[pd_id]["link"];
         comboProducts.push(comboProductDict);
     };
     parentDict["items"] = comboProducts;
@@ -319,10 +332,10 @@ async function cosmeticProductDetails(manualTags, product, productAttr){
         let tagValue = manualTags[CONSTANTS.COSMETIC_STORE_TAG_GROUP][0]
         if(tagValue.tagValue === CONSTANTS.COSMETIC_STORE_TAG_VALUE){
             retDict = {
-                isCosmetic     : true,
+                isCosmetic      : true,
                 type            : CONSTANTS.COSMETIC_STORE_TAG_GROUP,
                 sub_type        : CONSTANTS.COSMETIC_STORE_TAG_VALUE,
-                shade_img_url   : imageUtil.getShadeImage(product.ProductDescription,
+                shadeImageUrl   : imageUtil.getShadeImage(product.ProductDescription,
                      productAttr)
             }
         }

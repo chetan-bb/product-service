@@ -17,7 +17,7 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
             productController.getAllComboProductsForProductId(productDescId, masterRi),
             productController.getAllRelatedComboProductsForProductId(productDescId),
             productController.getPromoData(productDescId, masterRi, cityId, memberId, visitorId),
-            productController.getAllAvailabilityInfo(productDescId, masterRi, visitorId)
+            productController.getAllAvailabilityInfo(productDescId, masterRi, visitorId, memberId),
         ]);
         let productResult = productPricingResultObject[0];
         let childProducts = productPricingResultObject[1];
@@ -31,6 +31,11 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
         if (!productResult || productResult.isEmpty()) {
             throw `Product not found for given pd id ${productDescId} and masterRi ${masterRi}`;
         }
+        childProducts = contextualChildrenfilterUtil.filterChildren(childProducts, 
+            contextualChildren, productResult.Product);
+        
+        productResult.CosmeticDescription['childProducts'] = childProducts;
+        productResult.CosmeticDescription['parent_product_desc'] = productDescId;
 
         childProducts = contextualChildrenfilterUtil.filterChildren(childProducts, 
             contextualChildren, productResult.Product);
@@ -91,6 +96,9 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
         product_attr = promoSaleData['product_attrs'];
         discount_price = promoSaleData['discounted_prices'];
     }
+    
+    let cosmeticFunctionDetails = [getCosmeticResult, [cosmeticDescription]]
+    
     //get data from service and assemble
     let responseGetters = [getProductData(Product, product_attr),
                                             getProductImages(Product, ProductDescriptionAttr),
@@ -101,7 +109,7 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
                                             getVariableWeightMsgAndLink(Product.ProductDescription,
                                                 ParentCategory, Product.City), //todo this city might be request city i think
                                             getProductTags(ManualTagValues, AutoTagValues),
-                                            getCosmeticResult(cosmeticDescription),
+                                            generateAdditionalAttr(cosmeticFunctionDetails),
                                             getAllAvailabilityInfo(availabilityInfo),
                                             getComboResult(comboResult),
                                             getAdditionDestination(additionDestination)
@@ -124,46 +132,38 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
     return response;
 }
 
+function buildTagReponseItem(key, values){
+    return {
+        header: key.toUpperCase(),
+        values: values.map((value) => {
+            return {
+                [value['tagValue']]: {
+                    dest_type: CONSTANTS.PRODUCT_LIST,
+                    dest_slug: `type=${CONSTANTS.TAG_SEARCH}&slug=${value.slug}`,
+                    url: value.url
+                    }
+                }
+        })
+    }
+}
 
 function getProductTags(ManualTagValues, AutoTagValues) {
-    let tagList = [];
+    let manualTagList = [];
+    let autoTagList = [];
+    const AUTO_TAG_HEADER = "More Info"
     if (!ManualTagValues || !ManualTagValues.isEmpty()) {
-        Object.entries(ManualTagValues).forEach(([key, values]) => {
-            console.log(key, values);
-            tagList.push({
-                header: key.toUpperCase(),
-                values: values.map((value) => {
-                    return {
-                        [value['tagValue']]: {
-                            dest_type: CONSTANTS.PRODUCT_LIST,
-                            dest_slug: `type=${CONSTANTS.TAG_SEARCH}&slug=${value.slug}`,
-                            url: value.url
-                        }
-                    }
-
-                })
-            })
+        manualTagList = Object.entries(ManualTagValues).filter(([key, values]) => {
+            if (key !== CONSTANTS.COSMETIC_STORE_TAG_GROUP){
+                return buildTagReponseItem(key, values);
+            }                        
         });
     }
     if (!AutoTagValues || !AutoTagValues.isEmpty()) {
-        Object.entries(AutoTagValues).forEach(([key, values]) => {
-            console.log(key, values);
-            tagList.push({
-                header: 'More Info',
-                values: values.map((value) => {
-                    return {
-                        [value['tagValue']]: {
-                            dest_type: CONSTANTS.PRODUCT_LIST,
-                            dest_slug: `type=${CONSTANTS.TAG_SEARCH}&slug=${value.slug}`,
-                            url: value.url
-                        }
-                    }
-
-                })
-            })
-        });
+        autoTagList = Object.entries(AutoTagValues).filter(([key, values]) => {
+            return buildTagReponseItem(AUTO_TAG_HEADER, values);
+        });        
     }
-    return {tags:tagList}
+    return {tags:manualTagList.concat(autoTagList)}
 }
 
 function getProductImages(Product, ProductDescriptionAttr) {
@@ -334,15 +334,13 @@ function getVariableWeightMsg(ProductDescription, ParentCategory, CAP_VARIABLE_W
 function getCosmeticResult(cosmeticDescription){
     if(cosmeticDescription.isCosmetic === false ||
         cosmeticDescription.childProducts.length < 1){
-        return {
-            attrs:{}
-        }
+        return {}
     }
     else {
         delete cosmeticDescription.isCosmetic;
         let dict = cosmeticDescription;
-        let shadeImageUrl = generateMultipleImageUrls(cosmeticDescription.shade_img_url.subUrl,
-            cosmeticDescription.shade_img_url.imageName,["s"]);
+        let shadeImageUrl = generateMultipleImageUrls(cosmeticDescription.shadeImageUrl.subUrl,
+            cosmeticDescription.shadeImageUrl.imageName,["s"]);
         cosmeticDescription["shade_img_url"] = shadeImageUrl["s"];            
         let children = cosmeticDescription.childProducts;
         delete cosmeticDescription.childProducts;
@@ -353,14 +351,54 @@ function getCosmeticResult(cosmeticDescription){
         else{
             dict.label = children.length + " more shades";             
         }
-        
-        dict.skus = Array.from(children.map((child)=> child.Product.ProductDescription.id));
-        dict.skus.push(cosmeticDescription.parent_product_desc);
-        return {
-            attrs: {dict}
-        } 
+        // Commenting skus keys used only for Product Listing pages 
+        // dict.skus = Array.from(children.map((child)=> String(child.Product.ProductDescription.id)));
+        // dict.skus.push(cosmeticDescription.parent_product_desc);
+        return dict
     }
 }
+
+function generateAdditionalAttr(...functionInfo){
+    /*
+    This function takes any number of functions as arguments 
+    Each argument should be a list of two items 
+    1: The function
+    2: Functions' arguments
+    The result of each function is appended into "info" key inside "additional_attr"
+    Example:
+      "additional_attr":{
+          "info":[
+            {
+                "type"                  :"parent_child_variant_type",
+                "sub_type"              :"colour",
+                "shade_img_url"         :"/p/s/274521-100-s_2.jpg",
+                "parent_product_desc"   :"100394025",
+                "label"                 :"1 more shade",
+                "skus"                  :["274521","100394025"]
+            },
+            {
+                "type"                  :"bby",
+                "label"                 :"10 days ago" 
+            }]
+        }
+    */
+    let additional_attr = {
+        info: []
+    }
+    functionInfo.map((func)=> {
+        let res = func[0].apply(this,func[1]);
+        if(!res.isEmpty()){
+            additional_attr['info'].push(res);            
+        }
+    });
+    if(additional_attr.info.length > 0){
+        return {
+            "additional_attr": additional_attr
+        }
+    }
+    
+}
+
 
 function getAllAvailabilityInfo(storeAvailability){
     if(storeAvailability && !storeAvailability.isEmpty()){
@@ -378,6 +416,19 @@ function getAllAvailabilityInfo(storeAvailability){
 
 function getComboResult(ComboResult){
     if(ComboResult && !ComboResult.isEmpty()){
+        ComboResult.items.map((item)=>{
+            let images = generateMultipleImageUrls(item.img_url.subUrl, 
+                item.img_url.imageName, ['s']);
+            delete item.img_url;
+            if(!images.isEmpty()){
+                images = images['s'];
+            }
+            else{
+                images = "";
+            }
+            item.img_url = images;
+        })
+
         return {
             "combo_dict":ComboResult
         };

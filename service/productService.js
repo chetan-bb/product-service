@@ -335,7 +335,7 @@ async function cosmeticProductDetails(manualTags, product, productAttr){
                 isCosmetic      : true,
                 type            : CONSTANTS.COSMETIC_STORE_TAG_GROUP,
                 sub_type        : CONSTANTS.COSMETIC_STORE_TAG_VALUE,
-                shadeImageUrl     : imageUtil.getShadeImage(product.ProductDescription,
+                shadeImageUrl   : imageUtil.getShadeImage(product.ProductDescription,
                      productAttr)
             }
         }

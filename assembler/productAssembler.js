@@ -37,6 +37,12 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
         productResult.CosmeticDescription['childProducts'] = childProducts;
         productResult.CosmeticDescription['parent_product_desc'] = productDescId;
 
+        childProducts = contextualChildrenfilterUtil.filterChildren(childProducts, 
+            contextualChildren, productResult.Product);
+        
+        productResult.CosmeticDescription['childProducts'] = childProducts;
+        productResult.CosmeticDescription['parent_product_desc'] = productDescId;
+
         let childProductsResponse = [];
         if (childProducts) {
             childProducts.forEach((childResult) => {
@@ -119,7 +125,7 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
         Object.assign(response, {sale: saleInfo});
 
     }
-    if (discount_price) {
+    if (discount_price && !discount_price.isEmpty()) {
         Object.assign(response, {discounted_price: discount_price});
     }
 

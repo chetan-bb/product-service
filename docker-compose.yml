@@ -13,8 +13,9 @@ services:
       - HOST=localhost
       - DIALECT=mysql
       - DBPORT=3306
+      - PORT=80
     volumes:
-      - ~/microservice:/productservice
+      - ./:/productservice
     network_mode: "host"
     command: npm start
     ports:

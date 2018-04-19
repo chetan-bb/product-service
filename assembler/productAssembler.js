@@ -2,7 +2,7 @@
 
 const discountUtil = require('../service/discountUtil');
 const imageUtil = require('../service/imageUtil');
-const contextualChildrenfilterUtil = require('../service/contextualChildrenFilter');
+const contextualChildrenFilterUtil = require('../service/contextualChildrenFilter');
 const productController = require('../service/productService');
 const striptags = require('striptags');
 const CONSTANTS = require('./constants');
@@ -31,13 +31,7 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
         if (!productResult || productResult.isEmpty()) {
             throw `Product not found for given pd id ${productDescId} and masterRi ${masterRi}`;
         }
-        childProducts = contextualChildrenfilterUtil.filterChildren(childProducts, 
-            contextualChildren, productResult.Product);
-        
-        productResult.CosmeticDescription['childProducts'] = childProducts;
-        productResult.CosmeticDescription['parent_product_desc'] = productDescId;
-
-        childProducts = contextualChildrenfilterUtil.filterChildren(childProducts, 
+        childProducts = contextualChildrenFilterUtil.filterChildren(childProducts, 
             contextualChildren, productResult.Product);
         
         productResult.CosmeticDescription['childProducts'] = childProducts;
@@ -111,8 +105,7 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
                                             getProductTags(ManualTagValues, AutoTagValues),
                                             generateAdditionalAttr(cosmeticFunctionDetails),
                                             getAllAvailabilityInfo(availabilityInfo),
-                                            getComboResult(comboResult),
-                                            getAdditionDestination(additionDestination)
+                                            generateComboInfo(comboResult, additionDestination)
                                             ];
     let response = {};
     responseGetters.forEach((fn) => {
@@ -413,10 +406,24 @@ function getAllAvailabilityInfo(storeAvailability){
     }
 }
 
+function generateComboInfo(comboResult, additionDestination){
+    let comboSkuDetails = getComboResult(comboResult);
+    let comboDestination  = getAdditionDestination(additionDestination);
+    let comboInfo = {
+        "combo_info" : {}
+    }
+    if(comboSkuDetails){
+        comboInfo["combo_info"] = comboSkuDetails["combo_dict"]
+    }
+    if(comboDestination){
+        comboInfo["combo_info"]["destination"] = comboDestination["addition_destination"]; 
+    }
+    return comboInfo
+}
 
-function getComboResult(ComboResult){
-    if(ComboResult && !ComboResult.isEmpty()){
-        ComboResult.items.map((item)=>{
+function getComboResult(comboResult){
+    if(comboResult && !comboResult.isEmpty()){
+        comboResult.items.map((item)=>{
             let images = generateMultipleImageUrls(item.img_url.subUrl, 
                 item.img_url.imageName, ['s']);
             delete item.img_url;
@@ -430,16 +437,22 @@ function getComboResult(ComboResult){
         })
 
         return {
-            "combo_dict":ComboResult
+            "combo_dict":comboResult
         };
+    }
+    else {
+        return null
     }
 }
 
-function getAdditionDestination(AdditionDestination){
-    if(AdditionDestination && !AdditionDestination.isEmpty()){
+function getAdditionDestination(additionDestination){
+    if(additionDestination && !additionDestination.isEmpty()){
         return {
-            "addition_destination":AdditionDestination
+            "addition_destination":additionDestination
         };
+    }
+    else{
+        return null
     }
 }
 

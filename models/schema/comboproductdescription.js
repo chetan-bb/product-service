@@ -10,7 +10,7 @@ module.exports = function (sequelize, DataTypes) {
         base.addColumns({
             "id": {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
             "quantity": {type: DataTypes.INTEGER, defaultValue:1, allowNull: true, field: "quantity"},
-            "combo_type": {type: DataTypes.INTEGER, allowNull: false, field: "combo_type"},
+            "comboType": {type: DataTypes.INTEGER, allowNull: false, field: "combo_type"},
             "status": {type: DataTypes.INTEGER,defaultValue:0, allowNull: true, field: "status"}            
         }, DataTypes),
         // Configs, 
@@ -20,7 +20,7 @@ module.exports = function (sequelize, DataTypes) {
             value.belongsTo(dbModels.ProductDescription, {
                 foreignKey: {
                     allowNull: false,
-                    name: 'parent_combo_sku_id'
+                    name: 'parentComboSkuId'
                 },
                 as: "ParentId"
             });

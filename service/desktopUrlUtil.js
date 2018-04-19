@@ -1,5 +1,5 @@
 
-function getProductAbsoluteUrl(productDescription) {
+function getProductPageUrl(productDescription) {
     let absoluteUrl = "";
     let brandSlug = "";
     let slug = "";
@@ -16,4 +16,4 @@ function getProductAbsoluteUrl(productDescription) {
     return absoluteUrl;
 }
 
-module.exports = {getProductAbsoluteUrl};
+module.exports = {getProductPageUrl};

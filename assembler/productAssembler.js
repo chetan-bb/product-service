@@ -8,6 +8,39 @@ const striptags = require('striptags');
 const CONSTANTS = require('./constants');
 const util = require('../utils/util');
 const path = require('path');
+const config = require(path.join(__dirname, "..", "conf", "conf.json"));
+process.env["NEW_RELIC_NO_CONFIG_FILE"] = true;
+process.env["NEW_RELIC_APP_NAME"] = "LOCAL_PRODUCTNODEJS";
+process.env["NEW_RELIC_LICENSE_KEY"] = "41499b068d1ca57f539cfb044bd9ad144000b9b9";
+let newRelicEnabled;
+let newRelic;
+if (config["newRelic"]["enabled"] === true || config["newRelic"]["enabled"] === "true") {
+    newRelic = require("newrelic");
+    newRelicEnabled = true;    
+}
+process.newRelic = newRelic;
+
+const nr = process.newRelic;
+function newRelicTransaction(tag,cb){
+    return new Promise(function(resolve,reject){
+        if(newRelicEnabled){
+            resolve(nr.startBackgroundTransaction(tag,cb));
+        }
+        else{
+            resolve(cb);
+        }
+    })
+}
+function newRelicSegment(segmentName,cb){
+    return new Promise(function(resolve,reject){
+        if(newRelicEnabled){
+            resolve(nr.startSegment(segmentName, true, cb));
+        }
+        else{
+            resolve(cb);
+        }
+    })
+}
 
 async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, visitorId) {
     try {

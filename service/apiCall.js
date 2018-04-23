@@ -7,7 +7,7 @@ const util = require('../utils/util');
 
 function downloadPromoData(productDescriptionId, masterRi, cityId, memberId, visitorId) {
     return new Promise((resolve, _) => {
-        process.env.HOST = 'https://qas6.bigbasket.com/'; // todo remove this
+        process.env.HOST = 'https://qas16.bigbasket.com/'; // todo remove this
         
         let query = util.isNumber(memberId) ? `?member_id=${memberId}` : '';
         let url = urlJoiner(process.env.HOST, '/api/promo/',
@@ -29,7 +29,7 @@ function downloadPromoData(productDescriptionId, masterRi, cityId, memberId, vis
 
 function downloadAllAvailabilityInfo(productDescriptionId, masterRi, visitorId, memberId){
     return new Promise((resolve, reject)=>{
-        process.env.HOST = 'https://qas6.bigbasket.com/'; // todo remove this        
+        process.env.HOST = 'https://qas16.bigbasket.com/'; // todo remove this        
         let query = util.isNumber(memberId) ? `?member_id=${memberId}` : '';
         let url = urlJoiner(process.env.HOST, '/api/availability/',
             `/${productDescriptionId}/${visitorId}/${masterRi}/`, query);

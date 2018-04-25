@@ -2,7 +2,7 @@
 const database = require('../datalayer/database');
 const tagUtil = require('./tagUtil');
 const imageUtil = require('./imageUtil');
-const absoluteUrlUtil = require('./absoluteUrlUtil');
+const desktopUrlUtil = require('./desktopUrlUtil');
 const util = require('../utils/util');
 const CONSTANTS = require('../assembler/constants');
 const assert = require('assert');
@@ -120,7 +120,7 @@ async function getAnnotationMsg(productDescriptionId, childIds, childProductsDic
 function buildChildProductDict(childProductsDict, childProduct, quantity){
     childProductsDict[childProduct.Product.ProductDescription.id] = {
         "mrp"           : Number(childProduct.Product.mrp),
-        "sale_price"    : (childProduct.Product.salePrice) ? Number(childProduct.Product.salePrice):0,
+        "salePrice"    : (childProduct.Product.salePrice) ? Number(childProduct.Product.salePrice):0,
         "quantity"      : quantity,
         "supplier"      : childProduct.Supplier
     }
@@ -129,7 +129,7 @@ function buildChildProductDict(childProductsDict, childProduct, quantity){
 function buildChildImageUrlDict(childProductsImageDict, product, productDescriptionAttr){
     childProductsImageDict[product.ProductDescription.id] = {
         "image": imageUtil.getProductPrimaryImage(product, productDescriptionAttr),
-        "link": absoluteUrlUtil.getProductAbsoluteUrl(product.ProductDescription)            
+        "link": desktopUrlUtil.getProductPageUrl(product.ProductDescription)            
     }
 }
 
@@ -152,8 +152,8 @@ async function getComboDiscountBreakupDict(comboDiscountBreakupList){
     let comboDiscountBreakupDict = {};
     for(let cdbd of comboDiscountBreakupList){
         comboDiscountBreakupDict[cdbd.CurrentDiscount.ChildProduct.product_description_id] = {
-            "discount_type"         : cdbd.CurrentDiscount.discount_type,
-            "total_discount_value"  : Number(cdbd.CurrentDiscount.total_discount_value),
+            "discountType"         : cdbd.CurrentDiscount.discountType,
+            "totalDiscountValue"  : Number(cdbd.CurrentDiscount.totalDiscountValue),
         };
     };
     return await Promise.resolve(comboDiscountBreakupDict);
@@ -163,25 +163,25 @@ async function getComboSku(comboDiscountBreakupDict, childProductsDict){
     let comboSku = {};
     for(let cdbd in comboDiscountBreakupDict){
         if (comboDiscountBreakupDict.hasOwnProperty(cdbd)) {           
-            let cdbd_key = cdbd;
-            let cdbd_value = comboDiscountBreakupDict[cdbd];
-            let sku = cdbd_key;
-            let discount_type = cdbd_value.discount_type;
-            let discount_value = cdbd_value.total_discount_value;
-            let mrp = childProductsDict[cdbd_key].mrp;
-            let sp = childProductsDict[cdbd_key].sale_price;
-            let quantity = childProductsDict[cdbd_key].quantity;
-            if(discount_type === 1){
-                let temp_sp = sp*discount_value/100;
-                sp -= temp_sp;
+            let cdbdKey = cdbd;
+            let cdbdValue = comboDiscountBreakupDict[cdbd];
+            let sku = cdbdKey;
+            let discountType = cdbdValue.discountType;
+            let discountValue = cdbdValue.totalDiscountValue;
+            let mrp = childProductsDict[cdbdKey].mrp;
+            let sp = childProductsDict[cdbdKey].salePrice;
+            let quantity = childProductsDict[cdbdKey].quantity;
+            if(discountType === 1){
+                let tempSp = sp*discountValue/100;
+                sp -= tempSp;
             }
-            else if(discount_type === 2){
-                sp -= discount_value;
+            else if(discountType === 2){
+                sp -= discountValue;
             }
-            else if(discount_type === 3){
-                sp = discount_value;
+            else if(discountType === 3){
+                sp = discountValue;
             }
-            comboSku[cdbd_key] = {
+            comboSku[cdbdKey] = {
                 "sp"    :sp,
                 "qn"    :quantity,
                 "mrp"   :mrp
@@ -246,7 +246,7 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
         comboProductDict.mrp = String(mrp);
         comboProductDict.sp = String(sp); 
         let quantity_in_combo = comboSku[pd_id].qn;
-        let product_saving = quantity_in_combo * (Number(childProductsDict[pd_id].mrp) - Number(childProductsDict[pd_id].sale_price))
+        let product_saving = quantity_in_combo * (Number(childProductsDict[pd_id].mrp) - Number(childProductsDict[pd_id].salePrice))
         let savings_oncombo = quantity_in_combo * (Number(childProductsDict[pd_id].mrp) - Number(comboSku[pd_id].sp))
         let saving_msg;
         if (savings_oncombo > 0 && (savings_oncombo > product_saving)){

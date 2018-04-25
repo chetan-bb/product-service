@@ -9,10 +9,10 @@ module.exports = function (sequelize, DataTypes) {
         // Columns
         base.addColumns({
             "id": {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-            "discount_type": {type: DataTypes.INTEGER, defaultValue:1, allowNull: false, field: "discount_type"},
-            "total_discount_value": {type: DataTypes.INTEGER, allowNull: true, field: "total_discount_value"},
-            "start_date": {type: DataTypes.DATE, allowNull: false, field: "start_date"},
-            "end_date": {type: DataTypes.DATE, allowNull: false, field: "end_date"},
+            "discountType": {type: DataTypes.INTEGER, defaultValue:1, allowNull: false, field: "discount_type"},
+            "totalDiscountValue": {type: DataTypes.INTEGER, allowNull: true, field: "total_discount_value"},
+            "startDate": {type: DataTypes.DATE, allowNull: false, field: "start_date"},
+            "endDate": {type: DataTypes.DATE, allowNull: false, field: "end_date"},
             
         }, DataTypes),
         // Configs, 

@@ -11,12 +11,16 @@ const apiCall = require('./apiCall');
 const request = require('request');
 const path = require('path')
 const config = require(path.join(__dirname, "..", "conf", "conf.json"));
+
+let AerospikeStorage = require('../datalayer/aerospikeStorage').AerospikeStorage;
+const aerospikeStorage = new AerospikeStorage();
+
 process.env["NEW_RELIC_NO_CONFIG_FILE"] = true;
-process.env["NEW_RELIC_APP_NAME"] = "LOCAL_PRODUCTNODEJS";
-process.env["NEW_RELIC_LICENSE_KEY"] = "41499b068d1ca57f539cfb044bd9ad144000b9b9";
+process.env["NEW_RELIC_APP_NAME"] = config['NEWRELIC']["NAME"]
+process.env["NEW_RELIC_LICENSE_KEY"] = config['NEWRELIC']["KEY"]
 let newRelicEnabled;
 let newRelic;
-if (config["newRelic"]["enabled"] === true || config["newRelic"]["enabled"] === "true") {
+if (config["NEWRELIC"]["ENABLED"] === true || config["NEWRELIC"]["ENABLED"] === "true") {
     newRelic = require("newrelic");
     newRelicEnabled = true;    
 }
@@ -29,7 +33,7 @@ function newRelicTransaction(tag,cb){
             resolve(nr.startBackgroundTransaction(tag,cb));
         }
         else{
-            resolve(cb);
+            resolve(cb());
         }
     })
 }
@@ -39,7 +43,7 @@ function newRelicSegment(segmentName,cb){
             resolve(nr.startSegment(segmentName, true, cb));
         }
         else{
-            resolve(cb);
+            resolve(cb());
         }
     })
 }
@@ -48,8 +52,21 @@ function newRelicSegment(segmentName,cb){
 This is responsible to call data-layer and get json object from there
  */
 
-async function getProduct(productDescriptionId, masterRi) {
-    return await newRelicSegment("service_getProduct", async function(){        
+async function getProduct(productDescriptionId, masterRi, updateCacheMode=false) {
+    return await newRelicSegment("service_getProduct", async function(){
+        const key = `${productDescriptionId}.${masterRi}`;
+        
+        let data;
+        if(!updateCacheMode){
+            data = await aerospikeStorage.getData(key)
+        }
+        let product; 
+        let productDesc;
+        let city;
+        let supplier;
+        if(data && !data.isEmpty() && !updateCacheMode){
+            return data;
+        }
         let productAndPricing = await Promise.all([database.getProductFromDB(productDescriptionId, masterRi)]);
         let Product = productAndPricing[0];
         if(!Product || Product.isEmpty()){
@@ -78,6 +95,11 @@ async function getProduct(productDescriptionId, masterRi) {
             CosmeticDescription = await cosmeticProductDetails(ManualTagValues, Product,
                 resultBundlePackPDMetaParentCategory.ProductDescriptionAttr)
         }
+        let value = {Product, ProductDescriptionAttr, ParentCategory, ManualTagValues, AutoTagValues,
+            Supplier, CosmeticDescription};
+
+        aerospikeStorage.setData(key, value);
+
         return {Product, ProductDescriptionAttr, ParentCategory, ManualTagValues, AutoTagValues,
             Supplier, CosmeticDescription}
     });
@@ -251,7 +273,7 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
         let is_combo_dicount = false;
         let annotation_msg = '';
         let is_combo_product = await database.isComboProduct(productDescriptionId);
-        debugger;
+         ;
         let is_single_sku_combo = await database.isSingleSkuComboProduct(productDescriptionId);
         if(is_combo_product){
             annotation_msg = await getAnnotationMsg(productDescriptionId, childIds, childProductsDict, is_single_sku_combo);    
@@ -391,7 +413,13 @@ async function cosmeticProductDetails(manualTags, product, productAttr){
     });
 }
 
-module.exports = {getProduct, getAllChildrenForPdId, getAllComboProductsForProductId, 
-    getAllRelatedComboProductsForProductId, getPromoData, 
-    getAnnotationMsg, getComboSku, 
-    getComboChildProductsDict, getAllAvailabilityInfo};
+module.exports = {getProduct : getProduct,
+    getAllChildrenForPdId : getAllChildrenForPdId,
+    getAllComboProductsForProductId : getAllComboProductsForProductId,
+    getAllRelatedComboProductsForProductId: getAllRelatedComboProductsForProductId,
+    getPromoData:getPromoData,
+    getAnnotationMsg:getAnnotationMsg,
+    getComboSku:getComboSku,
+    getComboChildProductsDict:getComboChildProductsDict,
+    getAllAvailabilityInfo:getAllAvailabilityInfo
+    };

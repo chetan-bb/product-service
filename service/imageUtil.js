@@ -1,6 +1,7 @@
 'use strict';
 const util = require('../utils/util');
 const assert = require('assert');
+const protoOverrideProductDescription = require('../models/proto_override/override').ProductDescription;
 
 
 function getProductPrimaryImage(Product, noWatermark = false) {
@@ -45,7 +46,7 @@ function getProductSecondaryImages(ProductDescription, noWaterMark, ignoreShade,
     if(pdMeta){
         pdImageMetaData = JSON.parse(pdMeta.toString());
     }
-    let brandSlug = ProductDescription.brandSlug.call(ProductDescription);
+    let brandSlug = protoOverrideProductDescription.brandSlug(ProductDescription);
 
     Object.entries(pdImageMetaData).forEach(([num, imageData]) => {
         let version = imageData.version;
@@ -80,7 +81,7 @@ function getShadeImage(ProductDescription, pdMeta) {
     if(pdMeta){
         pdImageMetaData = JSON.parse(JSON.parse(JSON.stringify(pdMeta)).strValue);
     }
-    let brandSlug = ProductDescription.brandSlug.call(ProductDescription);
+    let brandSlug = protoOverrideProductDescription.brandSlug(ProductDescription);
     let imagePathAndName = {};
     for(let metaData in pdImageMetaData){
         if (pdImageMetaData.hasOwnProperty(metaData)) {  

@@ -13,10 +13,10 @@ const setCustomJsFunction = require('../utils/customJsUtil');
 const path = require('path')
 const config = require(path.join(__dirname, "..", "conf", "conf.json"));
 process.env["NEW_RELIC_NO_CONFIG_FILE"] = true;
-process.env["NEW_RELIC_APP_NAME"] = "LOCAL_PRODUCTNODEJS";
+process.env["NEW_RELIC_APP_NAME"] = "PRODUCTNODEJS_ANIL";
 process.env["NEW_RELIC_LICENSE_KEY"] = "41499b068d1ca57f539cfb044bd9ad144000b9b9";
 let newRelic;
-if (config["newRelic"]["enabled"] === true || config["newRelic"]["enabled"] === "true") {
+if (config["NEWRELIC"]["ENABLED"] === true || config["NEWRELIC"]["ENABLED"] === "true") {
     newRelic = require("newrelic");
 }
 process.newRelic = newRelic;

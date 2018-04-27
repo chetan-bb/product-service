@@ -9,12 +9,14 @@ const CONSTANTS = require('./constants');
 const util = require('../utils/util');
 const path = require('path');
 const config = require(path.join(__dirname, "..", "conf", "conf.json"));
+
+const protoOverrideProduct = require('../models/proto_override/override').Product;
 process.env["NEW_RELIC_NO_CONFIG_FILE"] = true;
-process.env["NEW_RELIC_APP_NAME"] = "LOCAL_PRODUCTNODEJS";
-process.env["NEW_RELIC_LICENSE_KEY"] = "41499b068d1ca57f539cfb044bd9ad144000b9b9";
+process.env["NEW_RELIC_APP_NAME"] = config['NEWRELIC']["NAME"]
+process.env["NEW_RELIC_LICENSE_KEY"] = config['NEWRELIC']["KEY"]
 let newRelicEnabled;
 let newRelic;
-if (config["newRelic"]["enabled"] === true || config["newRelic"]["enabled"] === "true") {
+if (config["NEWRELIC"]["ENABLED"] === true || config["NEWRELIC"]["ENABLED"] === "true") {
     newRelic = require("newrelic");
     newRelicEnabled = true;    
 }
@@ -113,6 +115,7 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
                                     comboResult = {},
                                     additionDestination = {}) {
     // promo and sale data from python layer
+     ;
     let promoData = {};
     let saleInfo = {};
     let product_attr = {};
@@ -231,9 +234,9 @@ function generateMultipleImageUrls(subUrl, imageName, imageSize=['ml', 's', 'l']
 function getBrandData(Product) {
     return {
         "brand": {
-            "name": Product.brandName.call(Product),
-            "slug": Product.brandSlug.call(Product),
-            "url": `/pb/${Product.brandSlug.call(Product)}`
+            "name": protoOverrideProduct.brandName(Product),
+            "slug": protoOverrideProduct.brandSlug(Product),
+            "url": `/pb/${protoOverrideProduct.brandSlug(Product)}`
         }
     }
 }
@@ -241,8 +244,8 @@ function getBrandData(Product) {
 function getCategoryData(Product) {
     return {
         "category": {
-            "tlc_name": Product.topCategoryName.call(Product),
-            "tlc_slug": Product.topCategorySlug.call(Product)
+            "tlc_name": protoOverrideProduct.topCategoryName(Product),
+            "tlc_slug": protoOverrideProduct.topCategorySlug(Product)
         }
     }
 }
@@ -259,9 +262,9 @@ function getDiscount(Product, product_attr = {}) {
 function getProductData(Product, product_attr={}) {//todo check Product.mrp must be equal to product_attr.mrp
     return {
         "id": Product.ProductDescription.id,
-        "desc": Product.description.call(Product),
-        "pack_desc": Product.multipackDescription.call(Product) || Product.PackType.call(Product),
-        "w": Product.weight.call(Product),
+        "desc": protoOverrideProduct.description(Product),
+        "pack_desc": protoOverrideProduct.multipackDescription(Product) || protoOverrideProduct.PackType(Product),
+        "w": protoOverrideProduct.weight(Product),
         "mrp": Product.mrp,
         "sp": product_attr['sp'] ? product_attr['sp']: Product.salePrice
     };
@@ -276,9 +279,9 @@ function getPricingData(Price) {
 
 function getProductAdditionalAttr(Product) {
 
-    let additionalInfoOne = Product.additionalInfoOne.call(Product);
-    let additionalInfoTwo = Product.additionalInfoTwo.call(Product);
-    let additionalInfoThree = Product.additionalInfoThree.call(Product);
+    let additionalInfoOne = protoOverrideProduct.additionalInfoOne(Product);
+    let additionalInfoTwo = protoOverrideProduct.additionalInfoTwo(Product);
+    let additionalInfoThree = protoOverrideProduct.additionalInfoThree(Product);
     let tabContent = [];
 
     if(additionalInfoOne && !additionalInfoOne.isEmpty()){

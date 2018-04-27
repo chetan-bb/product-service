@@ -4,11 +4,11 @@ const Op = require('sequelize').Op;
 const path = require('path')
 const config = require(path.join(__dirname, "..", "conf", "conf.json"));
 process.env["NEW_RELIC_NO_CONFIG_FILE"] = true;
-process.env["NEW_RELIC_APP_NAME"] = "LOCAL_PRODUCTNODEJS";
-process.env["NEW_RELIC_LICENSE_KEY"] = "41499b068d1ca57f539cfb044bd9ad144000b9b9";
+process.env["NEW_RELIC_APP_NAME"] = config['NEWRELIC']["NAME"]
+process.env["NEW_RELIC_LICENSE_KEY"] = config['NEWRELIC']["KEY"]
 let newRelicEnabled;
 let newRelic;
-if (config["newRelic"]["enabled"] === true || config["newRelic"]["enabled"] === "true") {
+if (config["NEWRELIC"]["ENABLED"] === true || config["NEWRELIC"]["ENABLED"] === "true") {
     newRelic = require("newrelic");
     newRelicEnabled = true;    
 }
@@ -21,7 +21,7 @@ function newRelicTransaction(tag,cb){
             resolve(nr.startBackgroundTransaction(tag,cb));
         }
         else{
-            resolve(cb);
+            resolve(cb());
         }
     })
 }
@@ -31,12 +31,14 @@ function newRelicSegment(segmentName,cb){
             resolve(nr.startSegment(segmentName, true, cb));
         }
         else{
-            resolve(cb);
+            resolve(cb());
         }
     })
 }
 async function getProductFromDB(productDescriptionId, masterRi) {
     return await newRelicTransaction('db_getProductFromDB', function(){
+        
+        
         return process.dbModels.Product.findOne({
         where: {
             reservation_info_id: masterRi, //todo handle this
@@ -192,7 +194,7 @@ async function getAllParentChildProductForProductId(productDescriptionId) {
 }
 
 async function isComboProduct(productDescriptionId) {
-    debugger;
+     ;
     console.log("isComboProduct");
     await newRelicSegment("db_isComboProduct", async function(){
         let comboProducts = await process.dbModels.ComboProductDescription.findAll({
@@ -202,11 +204,11 @@ async function isComboProduct(productDescriptionId) {
             }
         });
     if(comboProducts.length>0){
-        debugger;
+         ;
         return true;
     }
     else{
-        debugger;
+         ;
         return false;
     }
     })

@@ -1,8 +1,34 @@
 {
-    "newRelic": {
-      "enabled": true,
-      "key": "41499b068d1ca57f539cfb044bd9ad144000b9b9",
-      "name": "PRODNODEJS"
-    }
+    "NEWRELIC": {
+      "ENABLED": true,
+      "KEY": "41499b068d1ca57f539cfb044bd9ad144000b9b9",
+      "NAME": "ANIL_PRODNODEJS"
+    },
+    "AEROSPIKE":{
+      "TYPE":{
+        "CACHE" : "cache",
+        "PERSISTENT": "persistent"
+      },
+      "NAMESPACE":"bbcache",
+      "SET": "test_products_2",
+      "PRODUCTSERVICE_PREFIX_KEY":"pms",
+      "PRODUCTSERVICE_VERSION":"v1"
+      
+    },
+    "AEROSPIKE_CLIENT": [
+      {
+        "ADDR": "0.0.0.0",
+        "PORT": 3000
+      },
+      {
+        "ADDR": "10.2.1.164",
+        "PORT": 3000
+      },
+     {
+        "ADDR": "10.2.1.16",
+        "PORT": 3000
+      }
+    ]
+
 }
   

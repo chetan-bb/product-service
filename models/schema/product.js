@@ -49,19 +49,19 @@ module.exports = function (sequelize, DataTypes) {
         });
     };
 
-    Product.prototype.topCategoryName = function () {
+    Product.topCategoryName = function () {
         if(this.ProductDescription.TopCategory){
             return this.ProductDescription.TopCategory.name
         }
     };
 
-    Product.prototype.topCategorySlug = function () {
+    Product.topCategorySlug = function () {
         if(this.ProductDescription.TopCategory){
             return this.ProductDescription.TopCategory.slug
         }
     };
 
-    Product.prototype.brandName = function () {
+    Product.brandName = function () {
         if(this.ProductDescription.ProductBrand){
             return this.ProductDescription.ProductBrand.name
         }
@@ -69,7 +69,7 @@ module.exports = function (sequelize, DataTypes) {
         return ''
     };
 
-    Product.prototype.brandSlug = function () {
+    Product.brandSlug = function () {
         if(this.ProductDescription.ProductBrand){
             return this.ProductDescription.ProductBrand.slug
         }
@@ -77,7 +77,7 @@ module.exports = function (sequelize, DataTypes) {
         return ''
     };
 
-    Product.prototype.description = function () {
+    Product.description = function () {
         console.log(this);
         if(this.ProductBundlePack){
             return this.ProductBundlePack.description;
@@ -90,7 +90,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     };
 
-    Product.prototype.short_description = function () {
+    Product.short_description = function () {
         console.log(this);
         if(this.ProductDescription){
             return this.ProductDescription.short_description;
@@ -99,7 +99,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     };
 
-    Product.prototype.multipackDescription = function () {
+    Product.multipackDescription = function () {
         if(this.ProductBundlePack){
             return this.ProductBundlePack.multiPackDescription;
         }else if(this.ProductDescription){
@@ -107,7 +107,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     };
 
-    Product.prototype.PackType = function () {
+    Product.PackType = function () {
         if(this.ProductBundlePack){
             return this.ProductBundlePack.packType;
         }else if(this.ProductDescription){
@@ -115,7 +115,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     };
 
-    Product.prototype.weight = function () {
+    Product.weight = function () {
         if(this.ProductBundlePack && this.ProductBundlePack.weight){
             return this.ProductBundlePack.weight;
         }else if(this.ProductDescription && this.ProductDescription.weight){
@@ -125,7 +125,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     };
 
-    Product.prototype.additionalInfoOne = function () {
+    Product.additionalInfoOne = function () {
         if(this.ProductBundlePack){
             return this.ProductBundlePack.additionalInfoOne;
         }else if(this.ProductDescription){
@@ -133,7 +133,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     };
 
-    Product.prototype.additionalInfoTwo = function () {
+    Product.additionalInfoTwo = function () {
         if(this.ProductBundlePack){
             return this.ProductBundlePack.additionalInfoTwo;
         }else if(this.ProductDescription){
@@ -141,7 +141,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     };
 
-    Product.prototype.additionalInfoThree = function () {
+    Product.additionalInfoThree = function () {
         if(this.ProductBundlePack){
             return this.ProductBundlePack.additionalInfoThree;
         }else if(this.ProductDescription){

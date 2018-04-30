@@ -3,7 +3,7 @@
 const getProductDataForPdId = require('../assembler/productAssembler');
 
 
-module.exports = function productDetailHandler(req, res) {
+function productDetailHandler(req, res) {
     let apiVersion = req.params['apiVersion'];
     let productDescId = req.params['productDescId'];
     let masterRi = req.params['masterRi'];
@@ -23,4 +23,23 @@ module.exports = function productDetailHandler(req, res) {
             "stack":err.stack
         });
     });
+}
+
+function health(req, res) {
+    // this will check aerospike and mysql connection and node process running
+
+    if (Object.keys(process.dbModels).length > 0) {
+        res.status(200).json({
+            "status": 0, "message": "success"
+        });
+    } else {
+        res.status(500).json({
+            "status": -1, "message": 'Health check failed'
+        });
+    }
+}
+
+module.exports = {
+    productDetailHandler,
+    health
 };

@@ -19,11 +19,11 @@ const ProductType = new GraphQLObjectType({
     fields: () => ({
         // all primary fields
         id: {type: new GraphQLNonNull(GraphQLInt)},
-        desc: {type: GraphQLFloat},
+        desc: {type: GraphQLString},
         mrp: {type: GraphQLFloat},
         sp: {type: GraphQLFloat},
         pack_desc: {type: GraphQLFloat},
-        w: {type: GraphQLFloat},
+        w: {type: GraphQLString},
 
 
         // object type fields
@@ -40,7 +40,7 @@ const ProductType = new GraphQLObjectType({
         combo_info:{type: ComboInfo},
         sale_info:{type: SaleInfo},
         promo_info:{type: PromoInfo},
-        store_availability:{type: Availability}
+        store_availability:{type: new GraphQLList(Availability)}
 
     })
 });

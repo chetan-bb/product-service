@@ -8,19 +8,13 @@ const CONSTANTS = require('../assembler/constants');
 const assert = require('assert');
 const apiCall = require('./apiCall');
 
-const request = require('request');
-const path = require('path')
-const config = require(path.join(__dirname, "..", "conf", "conf.json"));
 
 let AerospikeStorage = require('../datalayer/aerospikeStorage').AerospikeStorage;
 const aerospikeStorage = new AerospikeStorage();
 
-process.env["NEW_RELIC_NO_CONFIG_FILE"] = true;
-process.env["NEW_RELIC_APP_NAME"] = config['NEWRELIC']["NAME"]
-process.env["NEW_RELIC_LICENSE_KEY"] = config['NEWRELIC']["KEY"]
 let newRelicEnabled;
 let newRelic;
-if (config["NEWRELIC"]["ENABLED"] === true || config["NEWRELIC"]["ENABLED"] === "true") {
+if (global.config["NEWRELIC_ENABLED"] === true || global.config["NEWRELIC_ENABLED"] === "true") {
     newRelic = require("newrelic");
     newRelicEnabled = true;    
 }

@@ -23,9 +23,6 @@ module.exports = {
     SYSTEM_SHOPPING_LIST: "ssl",
     RECOMMENDATIONS: 'reco',
     ALL_OFFERS_DISCOUNT: 'd',
-    COSMETIC_CHILDREN_DISPLAY_COUNT: 5,
-    COSMETIC_STORE_TAG_GROUP: 'parent_child_variant_type',
-    COSMETIC_STORE_TAG_VALUE: 'colour',
     SPECIALITY_STORE_SCOPE: "speciality_store",
     OFFERS_PAGE: "offers",
     CUSTOMPAGE_FEATURED_PRODUCT: 'cpfp',
@@ -35,6 +32,8 @@ module.exports = {
     PROMO_OFFERS_BY_TYPE: "promo-offers-type",
     PROMO_OFFERS_FOR_YOU: "promo-offers-foryou",
 
+    FI_TYPE_SPECIALITY : 'speciality-express',
+    FI_TYPE_SPECIALITY_CHILD : 'speciality-child-express',
     FI_TYPE_NORMAL  :"normal",
     FI_TYPE_EXPRESS :"express",
     FI_TYPE:{

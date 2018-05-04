@@ -8,17 +8,13 @@ const striptags = require('striptags');
 const CONSTANTS = require('./constants');
 const util = require('../utils/util');
 const path = require('path');
-const config = require(path.join(__dirname, "..", "conf", "conf.json"));
 
 const protoOverrideProduct = require('../models/proto_override/override').Product;
-process.env["NEW_RELIC_NO_CONFIG_FILE"] = true;
-process.env["NEW_RELIC_APP_NAME"] = config['NEWRELIC']["NAME"]
-process.env["NEW_RELIC_LICENSE_KEY"] = config['NEWRELIC']["KEY"]
 let newRelicEnabled;
 let newRelic;
-if (config["NEWRELIC"]["ENABLED"] === true || config["NEWRELIC"]["ENABLED"] === "true") {
+if (global.config["NEWRELIC_ENABLED"] === true || global.config["NEWRELIC_ENABLED"] === "true") {
     newRelic = require("newrelic");
-    newRelicEnabled = true;    
+    newRelicEnabled = true;
 }
 process.newRelic = newRelic;
 
@@ -86,7 +82,8 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
                     childResult.ManualTagValues, childResult.AutoTagValues,
                     promoSaleResult[childResult.Product.id],
                     childResult.CosmeticDescription, 
-                    availabilityInfo[childResult.Product.id]);
+                    availabilityInfo[childResult.Product.id],
+                    childResult.Supplier);
                 childProductsResponse.push(result);
             });
         }
@@ -97,10 +94,11 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
             promoSaleResult[productResult.Product.id],
             productResult.CosmeticDescription, 
             availabilityInfo[productResult.Product.id],
+            productResult.Supplier,
             comboResult, additionDestination);
 
         return Object.assign(parentProductResponse, {children: childProductsResponse,
-            'base_img_url': process.env.BASEIMAGEURL || CONSTANTS.BASE_IMAGE_URL});
+            'base_img_url': global.config.BASE_IMAGE_URL || CONSTANTS.BASE_IMAGE_URL});
     } catch (err) {
         throw {status:500, message:err.message, stack: err.stack};
     }
@@ -112,6 +110,7 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
                                     ManualTagValues, AutoTagValues, 
                                     promoSaleData, cosmeticDescription,
                                     availabilityInfo,
+                                    supplier,
                                     comboResult = {},
                                     additionDestination = {}) {
     // promo and sale data from python layer
@@ -136,7 +135,7 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
                                             getCategoryData(Product),
                                             getDiscount(Product, product_attr),
                                             getProductAdditionalAttr(Product),
-                                            getVariableWeightMsgAndLink(Product.ProductDescription,
+                                            getVariableWeightMsgAndLink(supplier, Product.ProductDescription,
                                                 ParentCategory, Product.City), //todo this city might be request city i think
                                             getProductTags(ManualTagValues, AutoTagValues),
                                             generateAdditionalAttr(cosmeticFunctionDetails),
@@ -323,9 +322,11 @@ function extractTabTitleAndContent(extractingString) {
     return {title: title, content: content}
 }
 
-function getVariableWeightMsgAndLink(ProductDescription, ParentCategory, City) {
-    let storeVariableWeight = false; //todo fix me for speciality products
-    let CAP_VARIABLE_WEIGHT = 5; //todo fix me for getting data from local settings
+function getVariableWeightMsgAndLink(supplier, ProductDescription, ParentCategory, City) {
+    // let storeVariableWeight = false; //todo fix me for speciality products
+    let storeVariableWeight = (supplier.FulfillmentInfo.fulfillment_type === CONSTANTS.FI_TYPE_SPECIALITY_CHILD ||
+                                supplier.FulfillmentInfo.fulfillment_type === CONSTANTS.FI_TYPE_SPECIALITY);
+    let CAP_VARIABLE_WEIGHT = global.config["CAP_VARIABLE_WEIGHT"];
     if(ProductDescription.hasVariableWeight && City.warehouseFulfilment){
         return { variableWeight: {
                     msg: getVariableWeightMsg(ProductDescription, ParentCategory,

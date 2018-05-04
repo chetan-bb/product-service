@@ -6,7 +6,7 @@ const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const compression = require("compression");
-
+require("./validate");
 const routes = require('./routes/urls');
 const app = express();
 app.disable('x-powered-by');

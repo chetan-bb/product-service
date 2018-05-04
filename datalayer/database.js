@@ -1,14 +1,10 @@
 'use strict';
 
 const Op = require('sequelize').Op;
-const path = require('path')
-const config = require(path.join(__dirname, "..", "conf", "conf.json"));
-process.env["NEW_RELIC_NO_CONFIG_FILE"] = true;
-process.env["NEW_RELIC_APP_NAME"] = config['NEWRELIC']["NAME"]
-process.env["NEW_RELIC_LICENSE_KEY"] = config['NEWRELIC']["KEY"]
+
 let newRelicEnabled;
 let newRelic;
-if (config["NEWRELIC"]["ENABLED"] === true || config["NEWRELIC"]["ENABLED"] === "true") {
+if (global.config["NEWRELIC_ENABLED"] === true || global.config["NEWRELIC_ENABLED"] === "true") {
     newRelic = require("newrelic");
     newRelicEnabled = true;    
 }

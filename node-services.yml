@@ -51,7 +51,7 @@ spec:
       labels:
         pod: product-pod
     spec:
-      hostNetwork: true
+      #hostNetwork: true
       containers:
         - name: product
           image: jugaljoshi/product-service
@@ -95,8 +95,5 @@ spec:
                   key: db.port
           ports:
             - name: node-port
-              containerPort: 3000
+              containerPort: 32001
               protocol: TCP
-
-
-

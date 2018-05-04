@@ -21,5 +21,5 @@ RUN npm install && node --version
 COPY . .
 
 # container will receive packets with this port
-EXPOSE 3000
+EXPOSE 32001
 CMD [ "npm", "start" ]

@@ -36,7 +36,8 @@ const configSchema = {
         "NAMESPACE":"",
         "SET": "",
         "PRODUCTSERVICE_PREFIX_KEY":"",
-        "PRODUCTSERVICE_VERSION":""
+        "PRODUCTSERVICE_VERSION":"",
+        "TTL":""
 
     },
     "AEROSPIKE_CLIENT": [
@@ -45,7 +46,11 @@ const configSchema = {
             "PORT": ""
         }
     ],
-    "API_DOMAIN": ""
+    "API_DOMAIN_NAME": "",
+    "DOMAIN_NAME":  "",
+    "CAP_VARIABLE_WEIGHT": "",
+    "BASE_IMAGE_URL": ""
+
 
 };
 

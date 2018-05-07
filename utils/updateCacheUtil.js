@@ -20,7 +20,17 @@ class UpdateCacheUtil extends EventEmitter {
                 Args pdId= ${productId} ri= ${masterRi}`);
         this.emit('updateCache', productId, masterRi);
         
-    };    
+    };
+    
+    emitUpdateCacheList(productIdList, masterRiList){
+        console.log(`Inside emitUpdateCacheList function. 
+                Args pdIdList= ${productIdList} riList= ${masterRiList}`);
+        for (let pdId in productIdList){
+            for(let ri in masterRiList){
+                this.emit('updateCache', pdId, ri);
+            }
+        }
+    };
 }
 
 module.exports = new UpdateCacheUtil();

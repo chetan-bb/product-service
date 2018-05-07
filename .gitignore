@@ -7,3 +7,4 @@ gitignore.swp
 .idea/*
 self-ref/*
 coverage/*
+conf/*

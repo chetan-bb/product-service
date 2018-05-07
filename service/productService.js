@@ -377,8 +377,10 @@ async function getAllAvailabilityInfo(productDescriptionId, masterRi, visitorId,
             return await(apiCall.downloadAllAvailabilityInfo(productDescriptionId, 
                 masterRi, visitorId, memberId ));
         }catch(err){
-            console.log(err);
-            return {};
+            return {
+                'contextual_children':[],
+                'availability_details':{}
+            };
         }
     });
 }

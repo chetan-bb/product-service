@@ -9,7 +9,7 @@ function downloadPromoData(productDescriptionId, masterRi, cityId, memberId, vis
     return new Promise((resolve, _) => {
 
         let query = util.isNumber(memberId) ? `?member_id=${memberId}` : '';
-        let url = urlJoiner(global.config.API_DOMAIN, '/api/promo/',
+        let url = urlJoiner(global.config.API_DOMAIN_NAME, '/api/promo/',
             `/${productDescriptionId}/${visitorId}/${masterRi}/${cityId}/`, query);
         request.get(url, function (err, response, body) {
                 if (!err && response.statusCode === 200) {
@@ -29,7 +29,7 @@ function downloadPromoData(productDescriptionId, masterRi, cityId, memberId, vis
 function downloadAllAvailabilityInfo(productDescriptionId, masterRi, visitorId, memberId){
     return new Promise((resolve, reject)=>{
         let query = util.isNumber(memberId) ? `?member_id=${memberId}` : '';
-        let url = urlJoiner(global.config.API_DOMAIN, '/api/availability/',
+        let url = urlJoiner(global.config.API_DOMAIN_NAME, '/api/availability/',
             `/${productDescriptionId}/${visitorId}/${masterRi}/`, query);
         request.get(url, function (err, response, body) {
             if (!err && response.statusCode === 200) {

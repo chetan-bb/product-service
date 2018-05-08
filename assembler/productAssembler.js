@@ -2,7 +2,7 @@
 
 const discountUtil = require('../service/discountUtil');
 const imageUtil = require('../service/imageUtil');
-const contextualChildrenfilterUtil = require('../service/contextualChildrenFilter');
+const contextualChildrenFilterUtil = require('../service/contextualChildrenFilter');
 const productController = require('../service/productService');
 const striptags = require('striptags');
 const CONSTANTS = require('./constants');
@@ -31,13 +31,7 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
         if (!productResult || productResult.isEmpty()) {
             throw `Product not found for given pd id ${productDescId} and masterRi ${masterRi}`;
         }
-        childProducts = contextualChildrenfilterUtil.filterChildren(childProducts, 
-            contextualChildren, productResult.Product);
-        
-        productResult.CosmeticDescription['childProducts'] = childProducts;
-        productResult.CosmeticDescription['parent_product_desc'] = productDescId;
-
-        childProducts = contextualChildrenfilterUtil.filterChildren(childProducts, 
+        childProducts = contextualChildrenFilterUtil.filterChildren(childProducts, 
             contextualChildren, productResult.Product);
         
         productResult.CosmeticDescription['childProducts'] = childProducts;
@@ -111,8 +105,7 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
                                             getProductTags(ManualTagValues, AutoTagValues),
                                             generateAdditionalAttr(cosmeticFunctionDetails),
                                             getAllAvailabilityInfo(availabilityInfo),
-                                            getComboResult(comboResult),
-                                            getAdditionDestination(additionDestination)
+                                            generateComboInfo(comboResult, additionDestination)
                                             ];
     let response = {};
     responseGetters.forEach((fn) => {
@@ -132,38 +125,35 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
     return response;
 }
 
-function buildTagReponseItem(key, values){
+function buildTagResponseItem(key, values) {
     return {
         header: key.toUpperCase(),
         values: values.map((value) => {
             return {
-                [value['tagValue']]: {
-                    dest_type: CONSTANTS.PRODUCT_LIST,
-                    dest_slug: `type=${CONSTANTS.TAG_SEARCH}&slug=${value.slug}`,
-                    url: value.url
-                    }
-                }
+                display_name: value['tagValue'],
+                dest_type: CONSTANTS.PRODUCT_LIST,
+                dest_slug: `type=${CONSTANTS.TAG_SEARCH}&slug=${value.slug}`,
+                url: value.url
+            }
         })
     }
 }
 
 function getProductTags(ManualTagValues, AutoTagValues) {
-    let manualTagList = [];
-    let autoTagList = [];
-    const AUTO_TAG_HEADER = "More Info"
+    let tagList = [];
+    const AUTO_TAG_HEADER = "More Info";
     if (!ManualTagValues || !ManualTagValues.isEmpty()) {
-        manualTagList = Object.entries(ManualTagValues).filter(([key, values]) => {
-            if (key !== CONSTANTS.COSMETIC_STORE_TAG_GROUP){
-                return buildTagReponseItem(key, values);
-            }                        
+        Object.entries(ManualTagValues).forEach(([key, values]) => {
+            if (key === CONSTANTS.COSMETIC_STORE_TAG_GROUP) return true;
+            tagList.push(buildTagResponseItem(key, values));
         });
     }
     if (!AutoTagValues || !AutoTagValues.isEmpty()) {
-        autoTagList = Object.entries(AutoTagValues).filter(([key, values]) => {
-            return buildTagReponseItem(AUTO_TAG_HEADER, values);
+        Object.entries(AutoTagValues).forEach(([_, values]) => {
+            tagList.push(buildTagResponseItem(AUTO_TAG_HEADER, values));
         });        
     }
-    return {tags:manualTagList.concat(autoTagList)}
+    return {tags:tagList}
 }
 
 function getProductImages(Product, ProductDescriptionAttr) {
@@ -345,7 +335,7 @@ function getCosmeticResult(cosmeticDescription){
         let children = cosmeticDescription.childProducts;
         delete cosmeticDescription.childProducts;
 
-        if (children.length == 1){
+        if (children.length === 1){
             dict.label = children.length + " more shade";             
         }
         else{
@@ -413,10 +403,24 @@ function getAllAvailabilityInfo(storeAvailability){
     }
 }
 
+function generateComboInfo(comboResult, additionDestination){
+    let comboSkuDetails = getComboResult(comboResult);
+    let comboDestination  = getAdditionDestination(additionDestination);
+    let comboInfo = {
+        "combo_info" : {}
+    }
+    if(comboSkuDetails){
+        comboInfo["combo_info"] = comboSkuDetails["combo_dict"]
+    }
+    if(comboDestination){
+        comboInfo["combo_info"]["destination"] = comboDestination["addition_destination"]; 
+    }
+    return comboInfo
+}
 
-function getComboResult(ComboResult){
-    if(ComboResult && !ComboResult.isEmpty()){
-        ComboResult.items.map((item)=>{
+function getComboResult(comboResult){
+    if(comboResult && !comboResult.isEmpty()){
+        comboResult.items.map((item)=>{
             let images = generateMultipleImageUrls(item.img_url.subUrl, 
                 item.img_url.imageName, ['s']);
             delete item.img_url;
@@ -427,19 +431,25 @@ function getComboResult(ComboResult){
                 images = "";
             }
             item.img_url = images;
-        })
+        });
 
         return {
-            "combo_dict":ComboResult
+            "combo_dict":comboResult
         };
+    }
+    else {
+        return null
     }
 }
 
-function getAdditionDestination(AdditionDestination){
-    if(AdditionDestination && !AdditionDestination.isEmpty()){
+function getAdditionDestination(additionDestination){
+    if(additionDestination && !additionDestination.isEmpty()){
         return {
-            "addition_destination":AdditionDestination
+            "addition_destination":additionDestination
         };
+    }
+    else{
+        return null
     }
 }
 

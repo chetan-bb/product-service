@@ -9,7 +9,7 @@ const compression = require("compression");
 require("./validate");
 const routes = require('./routes/urls');
 const app = express();
-const context = require('./middleware/member');
+const context = require('./middleware/context');
 app.disable('x-powered-by');
 app.set('etag', false); // turn off
 
@@ -27,7 +27,7 @@ app.use(bodyParser.text());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use("/static", express.static(path.join(__dirname, 'public')));
-app.use("/product/:apiVersion/detail", context.getContext);
+app.use("/product/", context.getContext);
 
 //graphQL
 const graphQLHTTP = require('express-graphql');

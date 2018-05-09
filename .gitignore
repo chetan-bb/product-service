@@ -8,3 +8,4 @@ gitignore.swp
 self-ref/*
 coverage/*
 conf/*
+.env

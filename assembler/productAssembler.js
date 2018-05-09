@@ -12,7 +12,7 @@ const path = require('path');
 const protoOverrideProduct = require('../models/proto_override/override').Product;
 let newRelicEnabled;
 let newRelic;
-if (global.config["NEWRELIC_ENABLED"] === true || global.config["NEWRELIC_ENABLED"] === "true") {
+if (global.config["NEWRELIC_ENABLED"]) {
     newRelic = require("newrelic");
     newRelicEnabled = true;
 }
@@ -98,7 +98,7 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
             comboResult, additionDestination);
 
         return Object.assign(parentProductResponse, {children: childProductsResponse,
-            'base_img_url': global.config.BASE_IMAGE_URL || CONSTANTS.BASE_IMAGE_URL});
+            'base_img_url': global.config.BASE_IMAGE_URL});
     } catch (err) {
         throw {status:500, message:err.message, stack: err.stack};
     }
@@ -323,7 +323,6 @@ function extractTabTitleAndContent(extractingString) {
 }
 
 function getVariableWeightMsgAndLink(supplier, ProductDescription, ParentCategory, City) {
-    // let storeVariableWeight = false; //todo fix me for speciality products
     let storeVariableWeight = (supplier.FulfillmentInfo.fulfillment_type === CONSTANTS.FI_TYPE_SPECIALITY_CHILD ||
                                 supplier.FulfillmentInfo.fulfillment_type === CONSTANTS.FI_TYPE_SPECIALITY);
     let CAP_VARIABLE_WEIGHT = global.config["CAP_VARIABLE_WEIGHT"];

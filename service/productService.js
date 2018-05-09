@@ -14,7 +14,7 @@ const aerospikeStorage = new AerospikeStorage();
 
 let newRelicEnabled;
 let newRelic;
-if (global.config["NEWRELIC_ENABLED"] === true || global.config["NEWRELIC_ENABLED"] === "true") {
+if (global.config["NEWRELIC_ENABLED"]) {
     newRelic = require("newrelic");
     newRelicEnabled = true;    
 }

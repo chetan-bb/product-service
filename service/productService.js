@@ -7,40 +7,41 @@ const util = require('../utils/util');
 const CONSTANTS = require('../assembler/constants');
 const assert = require('assert');
 const apiCall = require('./apiCall');
+const { newRelicSegment,newRelicTransaction} = require("../utils/newRelic");
 
 
 let AerospikeStorage = require('../datalayer/aerospikeStorage').AerospikeStorage;
 const aerospikeStorage = new AerospikeStorage();
 
-let newRelicEnabled;
-let newRelic;
-if (global.config["NEWRELIC_ENABLED"] === true || global.config["NEWRELIC_ENABLED"] === "true") {
-    newRelic = require("newrelic");
-    newRelicEnabled = true;    
-}
-process.newRelic = newRelic;
-
-const nr = process.newRelic;
-function newRelicTransaction(tag,cb){
-    return new Promise(function(resolve,reject){
-        if(newRelicEnabled){
-            resolve(nr.startBackgroundTransaction(tag,cb));
-        }
-        else{
-            resolve(cb());
-        }
-    })
-}
-function newRelicSegment(segmentName,cb){
-    return new Promise(function(resolve,reject){
-        if(newRelicEnabled){
-            resolve(nr.startSegment(segmentName, true, cb));
-        }
-        else{
-            resolve(cb());
-        }
-    })
-}
+// let newRelicEnabled;
+// let newRelic;
+// if (global.config["NEWRELIC_ENABLED"] === true || global.config["NEWRELIC_ENABLED"] === "true") {
+//     newRelic = require("newrelic");
+//     newRelicEnabled = true;
+// }
+// process.newRelic = newRelic;
+//
+// const nr = process.newRelic;
+// function newRelicTransaction(tag,cb){
+//     return new Promise(function(resolve,reject){
+//         if(newRelicEnabled){
+//             resolve(nr.startBackgroundTransaction(tag,cb));
+//         }
+//         else{
+//             resolve(cb());
+//         }
+//     })
+// }
+// function newRelicSegment(segmentName,cb){
+//     return new Promise(function(resolve,reject){
+//         if(newRelicEnabled){
+//             resolve(nr.startSegment(segmentName, true, cb));
+//         }
+//         else{
+//             resolve(cb());
+//         }
+//     })
+// }
 
 /*
 This is responsible to call data-layer and get json object from there
@@ -74,7 +75,7 @@ async function getProduct(productDescriptionId, masterRi, updateCacheMode=false)
         let CosmeticDescription = null;
         if (Product) {
             let resultBundlePackPDMetaParentCategory = await getProductRelatedDataAsync(Product);
-            console.log(resultBundlePackPDMetaParentCategory);
+            // console.log(resultBundlePackPDMetaParentCategory);
             if (resultBundlePackPDMetaParentCategory.ProductBundlePack &&
                 resultBundlePackPDMetaParentCategory.ProductBundlePack.status === CONSTANTS.BUNDLE_PACK_CONST.ACTIVE) {
                 Product['ProductBundlePack'] = resultBundlePackPDMetaParentCategory.ProductBundlePack
@@ -92,7 +93,9 @@ async function getProduct(productDescriptionId, masterRi, updateCacheMode=false)
         let value = {Product, ProductDescriptionAttr, ParentCategory, ManualTagValues, AutoTagValues,
             Supplier, CosmeticDescription};
 
-        aerospikeStorage.setData(key, value);
+        aerospikeStorage.setData(key, value).catch(function(err){
+            logger.exception(err);
+        });
 
         return {Product, ProductDescriptionAttr, ParentCategory, ManualTagValues, AutoTagValues,
             Supplier, CosmeticDescription}
@@ -118,8 +121,7 @@ async function getProductRelatedDataAsync(Product) {
 }
 
 async function getAllChildrenForPdId(productDescriptionId, masterRi) {
-    return await newRelicSegment("service_getAllChildrenForPdId", async function(){        
-        
+    return await newRelicSegment("service_getAllChildrenForPdId", async function(){
         let childIds = await database.getAllParentChildProductForProductId(productDescriptionId);
 
         // fire len(child) queries async
@@ -349,7 +351,7 @@ async function getAllRelatedComboProductsForProductId(productDescriptionId) {
                 "dest_slug"     : "prod_id="+ productDescriptionId,
             };
         }
-        console.log('Related combo SKU ids- '+ childIds);
+        // console.log('Related combo SKU ids- '+ childIds);
 
         return await Promise.resolve(response);  
     });
@@ -362,7 +364,7 @@ async function getPromoData(productDescriptionId, masterRi, cityId, memberId, vi
         try{
                 return await(apiCall.downloadPromoData(productDescriptionId, masterRi, cityId, memberId, visitorId));
             }catch(err){
-                console.log(err);
+                logger.debug(err);
                 return {};
             }
     });
@@ -377,7 +379,7 @@ async function getAllAvailabilityInfo(productDescriptionId, masterRi, visitorId,
             return await(apiCall.downloadAllAvailabilityInfo(productDescriptionId, 
                 masterRi, visitorId, memberId ));
         }catch(err){
-            console.log(err);
+            // console.log(err);
             return {};
         }
     });

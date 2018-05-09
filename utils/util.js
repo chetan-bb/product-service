@@ -13,7 +13,7 @@ function encodeBase64(data) {
         let val = (bigInt(parseInt(data)).xor((parseInt('0xbbc00cee', 16))));
         return new Buffer(val.toString()).toString('base64');
     } catch (ex) {
-        //logger.error(ex);
+        logger.exception(ex);
         return (false);
     }
 }

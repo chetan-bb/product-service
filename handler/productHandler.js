@@ -18,9 +18,10 @@ function productDetailHandler(req, res) {
                 "response": result
             });
         }).catch((err) => {
+        logger.exception(err);
         res.status(err.status || 500).json({
             "status": -1, "message": err.message,
-            "stack":err.stack
+            // "stack":err.stack
         });
     });
 }

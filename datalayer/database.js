@@ -2,39 +2,9 @@
 
 const Op = require('sequelize').Op;
 
-let newRelicEnabled;
-let newRelic;
-if (global.config["NEWRELIC_ENABLED"] === true || global.config["NEWRELIC_ENABLED"] === "true") {
-    newRelic = require("newrelic");
-    newRelicEnabled = true;    
-}
-process.newRelic = newRelic;
-
-const nr = process.newRelic;
-function newRelicTransaction(tag,cb){
-    return new Promise(function(resolve,reject){
-        if(newRelicEnabled){
-            resolve(nr.startBackgroundTransaction(tag,cb));
-        }
-        else{
-            resolve(cb());
-        }
-    })
-}
-function newRelicSegment(segmentName,cb){
-    return new Promise(function(resolve,reject){
-        if(newRelicEnabled){
-            resolve(nr.startSegment(segmentName, true, cb));
-        }
-        else{
-            resolve(cb());
-        }
-    })
-}
+const { newRelicSegment,newRelicTransaction} = require("../utils/newRelic");
 async function getProductFromDB(productDescriptionId, masterRi) {
     return await newRelicTransaction('db_getProductFromDB', function(){
-        
-        
         return process.dbModels.Product.findOne({
         where: {
             reservation_info_id: masterRi, //todo handle this
@@ -191,7 +161,7 @@ async function getAllParentChildProductForProductId(productDescriptionId) {
 
 async function isComboProduct(productDescriptionId) {
      ;
-    console.log("isComboProduct");
+    // console.log("isComboProduct");
     await newRelicSegment("db_isComboProduct", async function(){
         let comboProducts = await process.dbModels.ComboProductDescription.findAll({
             where: {

@@ -7,6 +7,10 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const compression = require("compression");
 require("./validate");
+const config = require(path.join(__dirname, ".", "conf", "conf.json"));
+global.logger = new (require('bb-logger').BBLogger)(config.log.logging.dir,config.log.logging.name);
+global.qLogger = new (require('bb-logger').BBLogger)(config.log.qLogging.dir,config.log.qLogging.name);
+const reqResLogger = new (require('bb-logger').BBRequestLogMiddleware)(config.log.reqLogging.dir,config.log.reqLogging.name);
 const routes = require('./routes/urls');
 const app = express();
 app.disable('x-powered-by');
@@ -25,6 +29,7 @@ app.use(bodyParser.raw());
 app.use(bodyParser.text());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
+app.use("/",(req,res,next) => reqResLogger.requestLogMiddleware(req,res,next));
 app.use("/static", express.static(path.join(__dirname, 'public')));
 
 //graphQL
@@ -76,5 +81,10 @@ app.use(function (err, req, res, next) {
         error: {}
     });
 });
-
+process.on('uncaughtException', function (err) {
+    if (err) {
+        logger.exception("uncaught Exception " + err.stack);
+        process.exit(1);
+    }
+});
 module.exports = app;

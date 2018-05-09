@@ -32,7 +32,7 @@ const getProductDataForPdId = require('../../assembler/productAssembler');
 const resolvers = {
     Query: {
         getProduct: (root, args, context) => {
-            console.log(args);
+            // console.log(args);
             return getDummyData(args);
             //console.log(result);
             //return { id: '12', mrp: '27', tag: {id:123} };
@@ -43,10 +43,10 @@ const resolvers = {
 
 const sleep = require('util').promisify(setTimeout);
 async function getDummyData(args) {
-    console.log("Slept for");
+    // console.log("Slept for");
     let result = await getProductDataForPdId(args.id, args.masterRi, args.cityId, args.memberId, args.visitorId);
 
-    console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'+ JSON.stringify(result));
+    // console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'+ JSON.stringify(result));
     return result
 
 

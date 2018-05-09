@@ -10,35 +10,36 @@ const util = require('../utils/util');
 const path = require('path');
 
 const protoOverrideProduct = require('../models/proto_override/override').Product;
-let newRelicEnabled;
-let newRelic;
-if (global.config["NEWRELIC_ENABLED"] === true || global.config["NEWRELIC_ENABLED"] === "true") {
-    newRelic = require("newrelic");
-    newRelicEnabled = true;
-}
-process.newRelic = newRelic;
-
-const nr = process.newRelic;
-function newRelicTransaction(tag,cb){
-    return new Promise(function(resolve,reject){
-        if(newRelicEnabled){
-            resolve(nr.startBackgroundTransaction(tag,cb));
-        }
-        else{
-            resolve(cb);
-        }
-    })
-}
-function newRelicSegment(segmentName,cb){
-    return new Promise(function(resolve,reject){
-        if(newRelicEnabled){
-            resolve(nr.startSegment(segmentName, true, cb));
-        }
-        else{
-            resolve(cb);
-        }
-    })
-}
+const { newRelicSegment,newRelicTransaction} = require("../utils/newRelic");
+// let newRelicEnabled;
+// let newRelic;
+// if (global.config["NEWRELIC_ENABLED"] === true || global.config["NEWRELIC_ENABLED"] === "true") {
+//     newRelic = require("newrelic");
+//     newRelicEnabled = true;
+// }
+// process.newRelic = newRelic;
+//
+// const nr = process.newRelic;
+// function newRelicTransaction(tag,cb){
+//     return new Promise(function(resolve,reject){
+//         if(newRelicEnabled){
+//             resolve(nr.startBackgroundTransaction(tag,cb));
+//         }
+//         else{
+//             resolve(cb);
+//         }
+//     })
+// }
+// function newRelicSegment(segmentName,cb){
+//     return new Promise(function(resolve,reject){
+//         if(newRelicEnabled){
+//             resolve(nr.startSegment(segmentName, true, cb));
+//         }
+//         else{
+//             resolve(cb);
+//         }
+//     })
+// }
 
 async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, visitorId) {
     try {
@@ -58,9 +59,8 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
         
         let contextualChildren = productPricingResultObject[5]['contextual_children'];
         let availabilityInfo = productPricingResultObject[5]['availability_details'];
-        
         if (!productResult || productResult.isEmpty()) {
-            throw `Product not found for given pd id ${productDescId} and masterRi ${masterRi}`;
+            throw new Error(`Product not found for given pd id ${productDescId} and masterRi ${masterRi}`);
         }
         childProducts = contextualChildrenFilterUtil.filterChildren(childProducts, 
             contextualChildren, productResult.Product);
@@ -100,7 +100,7 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
         return Object.assign(parentProductResponse, {children: childProductsResponse,
             'base_img_url': global.config.BASE_IMAGE_URL || CONSTANTS.BASE_IMAGE_URL});
     } catch (err) {
-        throw {status:500, message:err.message, stack: err.stack};
+        throw {status:500, message:err.message || err, stack: err.stack || err};
     }
 
 }
@@ -193,7 +193,7 @@ function getProductTags(ManualTagValues, AutoTagValues) {
 
 function getProductImages(Product, ProductDescriptionAttr) {
     let primaryImageObj = imageUtil.getProductPrimaryImage(Product);
-    console.log(primaryImageObj);
+    // console.log(primaryImageObj);
     if(!primaryImageObj || primaryImageObj.isEmpty()){
         return {
             images:[]
@@ -208,7 +208,7 @@ function getProductImages(Product, ProductDescriptionAttr) {
             noWatermark, ignoreShade,
             ProductDescriptionAttr.strValue);
     }
-    console.log(secondaryImages);
+    // console.log(secondaryImages);
 
     let images = [generateMultipleImageUrls(primaryImageObj.subUrl, primaryImageObj.imageName)];
     let secondaryImagePath = secondaryImages.map((secondaryImageName) => {

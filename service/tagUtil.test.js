@@ -38,7 +38,7 @@ describe("Function Unit test", function () {
             ];
 
             const tagList = tagUtil.createTagObject(tagValueList);
-            console.log(tagList);
+            // console.log(tagList);
 
             tagList.should.be.an('object');
             expect(tagList).to.have.property(tagValueList[0]['tagGroupAttributeType']);

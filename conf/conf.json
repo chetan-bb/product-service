@@ -28,7 +28,24 @@
         "ADDR": "10.2.1.16",
         "PORT": 3000
       }
-    ]
+    ],
+  "API_DOMAIN": "https://qas16.bigbasket.com",
+  "CAP_VARIABLE_WEIGHT": 5,
+  "BASE_IMAGE_URL": "https://www.bigbasket.com/media/uploads",
+  "log" : {
+    "logging" : {
+      "dir" : "../logs",
+      "name" : "product-service"
+    },
+    "reqLogging" : {
+      "dir" : "../logs",
+      "name" : "product-service-req"
+    },
+    "qLogging" : {
+      "dir" : "../logs",
+      "name" : "product-service-req"
+    }
+  }
 
 }
   

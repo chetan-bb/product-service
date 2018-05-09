@@ -52,13 +52,13 @@ class AerospikeStorage{
         let self = this;
         key = `${this.prefix}.${this.version}.${key}`;
         return new Promise(function (resolve, reject) {
-            if (!aerospike) {
+            if (!self.aerospikeClient) {
                 resolve(false)
             }
             self.aerospikeClient.get( new aerospike.Key(self.namespace, self.setName, key), function (error, record) {
                 let isError = error && error.code !== aerospike.status.AEROSPIKE_OK;
                 if (isError) {
-                    console.log("Aerospike cache miss for Key:" + key, error)
+                   logger.debug("Aerospike cache miss for Key:" + key, error)
                 }
                 if (record && record.bins){
                     record = record.bins;
@@ -87,18 +87,18 @@ class AerospikeStorage{
             rc = {"key": key, "_value": JSON.stringify(value)};
         }
         return new Promise(function (resolve, reject) {
-            if (!aerospike) {
-                reject("No Aerospike connnection found")
+            if (!self.aerospikeClient) {
+                reject(new Error("No Aerospike connnection found"))
             }
             self.aerospikeClient.put(new aerospike.Key(self.namespace, self.setName, key), rc, metadata,
                 function (error, record) {
                     let success = true;
                     if (error) {
-                        console.log('AEROSPIKE PUT ERROR: '+ error.message);
+                        logger.debug('AEROSPIKE PUT ERROR: '+ error.message);
                         success = false;
                     }
                     else{
-                        console.log("AEROSPIKE PUT SUCCESS");
+                        logger.debug("AEROSPIKE PUT SUCCESS");
                     }
                     return resolve(success);
             })

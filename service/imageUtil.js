@@ -114,7 +114,7 @@ function generateRawImageFileName(baseFile) {
         return util.encodeBase64(productId).replace(/=/g, "")
     } else if (splitBaseFile.length === 2) {
         let ext = splitBaseFile[1];
-        console.log(productId, ext);
+        // console.log(productId, ext);
         return util.encodeBase64(productId).replace(/=/g, "") + '-' + ext;
     } else if (splitBaseFile.length === 3) {
         let ext = splitBaseFile[1] + '-' + splitBaseFile[2];

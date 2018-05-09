@@ -78,7 +78,7 @@ module.exports = function (sequelize, DataTypes) {
     };
 
     Product.description = function () {
-        console.log(this);
+        // console.log(this);
         if(this.ProductBundlePack){
             return this.ProductBundlePack.description;
         }else if (this.overrideDescription){
@@ -91,7 +91,7 @@ module.exports = function (sequelize, DataTypes) {
     };
 
     Product.short_description = function () {
-        console.log(this);
+        // console.log(this);
         if(this.ProductDescription){
             return this.ProductDescription.short_description;
         }else {

@@ -23,7 +23,7 @@ let config;
 try{
     config = require(path.join(__dirname, ".", "conf", "conf.json"));
 }catch(exc){
-    throw "Conf file not found";
+    throw new Error("Conf file not found");
 }
 
 const configSchema = {
@@ -61,11 +61,11 @@ const configSchema = {
 try {
     checkForKeys(configSchema, config,"Conf");
     if(missingKeys.length>=1){
-        throw (missingKeys);
+        throw new Error(missingKeys);
     }
     global.config = config;
 
 } catch(e){
-    console.log(e);
+    logger.exception(e);
     throw e;
 }

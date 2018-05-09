@@ -10,7 +10,7 @@ let host = process.env.HOST || 'localhost';
 let dialect = process.env.DIALECT || 'mysql';
 let dbPort = process.env.DBPORT || 3306;
 
-console.log(database, username, password, host);
+// console.log(database, username, password, host);
 const sequelize = new Sequelize(database, username, password, {
     host: host,
     dialect: dialect,
@@ -28,17 +28,17 @@ const sequelize = new Sequelize(database, username, password, {
 
 sequelize.authenticate()
     .then(() => {
-        console.log('Connection has been established successfully.');
+        logger.debug('Connection has been established successfully.');
         generateERD(sequelize);
     })
     .catch(err => {
-        console.error('Unable to connect to the database:', err);
+        logger.exception('Unable to connect to the database:', err);
     });
 
 function generateERD(sequelize) {
-    console.log(path.join(__dirname, 'schema/product.js'));
+    // console.log(path.join(__dirname, 'schema/product.js'));
     const svg = sequelizeErd(path.join(__dirname, 'schema/product.js'));
     writeFileSync(path.join(__dirname, 'erd.svg'), svg);
     setTimeout(() => process.exit(0), 800);
-    console.log('SVG generated successfully');
+    // console.log('SVG generated successfully');
 }

@@ -8,15 +8,15 @@ class UpdateCacheUtil extends EventEmitter {
     constructor(){
         super();
         this.on('updateCache',(productId, masterRi) => {
-            console.log(`Inside updateCache ON function. 
-                Args pdId= ${productId} ri= ${masterRi}`);
+            // logger.debug(`Inside updateCache ON function.
+            //     Args pdId= ${productId} ri= ${masterRi}`);
             const updateCacheMode = true;
             getProduct(productId, masterRi, updateCacheMode);
         });
     }
 
     emitUpdateCache(productId, masterRi){
-        console.log(`Inside emitUpdateCache function. 
+        logger.debug(`Inside emitUpdateCache function. 
                 Args pdId= ${productId} ri= ${masterRi}`);
         this.emit('updateCache', productId, masterRi);
         

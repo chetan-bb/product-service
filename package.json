@@ -7,7 +7,7 @@
     "test": "istanbul cover --print detail _mocha test"
   },
   "dependencies": {
-    "aerospike": "^3.2.0",
+    "aerospike": "^3.3.0",
     "async": "^2.6.0",
     "big-integer": "^1.6.26",
     "body-parser": "^1.18.2",
@@ -32,7 +32,8 @@
     "serve-favicon": "~2.4.5",
     "striptags": "^3.1.1",
     "underscore": "^1.8.3",
-    "url-join": "^4.0.0"
+    "url-join": "^4.0.0",
+    "winston": "^2.4.2"
   },
   "devDependencies": {
     "chai": "^4.1.2",

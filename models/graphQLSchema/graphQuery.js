@@ -32,7 +32,7 @@ const QueryType = new GraphQLObjectType({
             // The result of the previous resolver call
             resolve:async (product, args, context, info)=> { //esolve: (root, {productDescId, masterRi, ...}) => {
                 let ctx = context.context;
-                console.log(context);
+                //console.log(context);
 
                 return await getProductDataForPdId(args.id, ctx.masterRi, ctx.cityId, ctx.memberId, ctx.visitorId);
             }

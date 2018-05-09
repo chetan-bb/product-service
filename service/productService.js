@@ -380,7 +380,10 @@ async function getAllAvailabilityInfo(productDescriptionId, masterRi, visitorId,
                 masterRi, visitorId, memberId ));
         }catch(err){
             // console.log(err);
-            return {};
+            return {
+                'contextual_children':[],
+                'availability_details':{}
+            };
         }
     });
 }

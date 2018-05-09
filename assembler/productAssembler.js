@@ -98,7 +98,7 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
             comboResult, additionDestination);
 
         return Object.assign(parentProductResponse, {children: childProductsResponse,
-            'base_img_url': global.config.BASE_IMAGE_URL || CONSTANTS.BASE_IMAGE_URL});
+            'base_img_url': global.config.BASE_IMAGE_URL});
     } catch (err) {
         throw {status:500, message:err.message || err, stack: err.stack || err};
     }

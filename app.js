@@ -13,6 +13,7 @@ global.qLogger = new (require('bb-logger').BBLogger)(config.log.qLogging.dir,con
 const reqResLogger = new (require('bb-logger').BBRequestLogMiddleware)(config.log.reqLogging.dir,config.log.reqLogging.name);
 const routes = require('./routes/urls');
 const app = express();
+const context = require('./middleware/context');
 app.disable('x-powered-by');
 app.set('etag', false); // turn off
 
@@ -31,6 +32,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use("/",(req,res,next) => reqResLogger.requestLogMiddleware(req,res,next));
 app.use("/static", express.static(path.join(__dirname, 'public')));
+app.use("/product/", context.getContext);
 
 //graphQL
 const graphQLHTTP = require('express-graphql');
@@ -45,6 +47,7 @@ app.use('/product/v:apiVersion/gql', graphQLHTTP((req, res) => ({
     graphiql: app.get('env') === 'development', //Set to false if you don't want graphiql enabled
     context: {
         header: req.headers,
+        context: req.context  //This is coming from GetContext API from member service
         //res:res    // Grab the token from headers
     },
 })));

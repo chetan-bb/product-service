@@ -1,9 +1,13 @@
+//This module is used to validate the conf file
+//This module also sets the Global config variable
+//It has to be included in every test case file separately if it uses config
+
 const path = require('path');
 
 let missingKeys = [];
 
 function checkForKeys(object1,object2,tag){
-    for (var prop in object1){
+    for (let prop in object1){
         if(object1.hasOwnProperty(prop)){
             if(object2.hasOwnProperty(prop)){
                 if(typeof object2[prop] === "object"){
@@ -36,7 +40,8 @@ const configSchema = {
         "NAMESPACE":"",
         "SET": "",
         "PRODUCTSERVICE_PREFIX_KEY":"",
-        "PRODUCTSERVICE_VERSION":""
+        "PRODUCTSERVICE_VERSION":"",
+        "TTL":""
 
     },
     "AEROSPIKE_CLIENT": [
@@ -45,7 +50,11 @@ const configSchema = {
             "PORT": ""
         }
     ],
-    "API_DOMAIN": ""
+    "API_DOMAIN_NAME": "",
+    "DOMAIN_NAME":  "",
+    "CAP_VARIABLE_WEIGHT": "",
+    "BASE_IMAGE_URL": ""
+
 
 };
 

@@ -1,43 +1,4 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: external-service
-spec:
-  selector:
-    pod: product-pod
-  ports:
-    - name: www
-      port: 80
-      targetPort: node-port
-      protocol: TCP
-  type: NodePort
-
----
-
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-map-product-service
-data:
-  db.host: "qas6-db.bigbasket.com"
-  node.port: "3000"
----
-
-apiVersion: v1
-kind: Secret
-metadata:
-  name: product-service-secret
-type: Opeque
-data:
-  database: "YmJkYg=="
-  user.name: "ZGJhZG1pbjI="
-  password: "ZGJhZG1pbjIlJCMh"
-  dialect: "bXlzcWw="
-  db.port: "MzMwNg=="
-
----
-
-apiVersion: v1
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: node-deploment
@@ -51,12 +12,10 @@ spec:
       labels:
         pod: product-pod
     spec:
-      #hostNetwork: true
       containers:
         - name: product
           image: jugaljoshi/product-service
-
-          imagePullPolicy: Always #IfNotPresent
+          imagePullPolicy: Always
           env:
             - name: PORT
               valueFrom:

@@ -11,7 +11,6 @@ const initDB = require('../datalayer/initDBInstanceModels');
 const setCustomJsFunction = require('../utils/customJsUtil');
 const initialiseKafkaConsumer = require('../kafka/consumer');
 
-
 /**
  * Get port from environment and store in Express.
  */

@@ -9,6 +9,7 @@ var debug = require('debug')('microservice:server');
 var http = require('http');
 const initDB = require('../datalayer/initDBInstanceModels');
 const setCustomJsFunction = require('../utils/customJsUtil');
+const initialiseKafkaConsumer = require('../kafka/consumer');
 
 
 /**
@@ -28,6 +29,7 @@ initDB.dbInstance.authenticate()
         console.log('Connection has been established successfully.');
         setDBInstanceModels();
         setCustomJsFunction();
+        initialiseKafkaConsumer(app);
         server = http.createServer(app);
 
         /**

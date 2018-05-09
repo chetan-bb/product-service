@@ -42,6 +42,7 @@ app.use('/product/v:apiVersion/gql', graphQLHTTP((req, res) => ({
     graphiql: app.get('env') === 'development', //Set to false if you don't want graphiql enabled
     context: {
         header: req.headers,
+        context: req.context  //This is coming from GetContext API from member service
         //res:res    // Grab the token from headers
     },
 })));

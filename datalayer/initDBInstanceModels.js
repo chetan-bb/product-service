@@ -6,7 +6,7 @@ const Sequelize = require('sequelize');
 const modelDir = path.join(__dirname, "../models/schema");
 
 function getDbInstance() {
-    let database = process.env.DATABASE || 'bigbasket';
+    let database = process.env.DATABASE || 'bb';
     let username = process.env.USERNAME || 'root';
     let password = process.env.PASSWORD || 'toor';
     let host = process.env.HOST || 'localhost';

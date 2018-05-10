@@ -6,9 +6,13 @@ const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const compression = require("compression");
-
+require("./validate");
+global.logger = new (require('bb-logger').BBLogger)(config.LOG.LOGGING.DIR,config.LOG.LOGGING.NAME);
+global.qLogger = new (require('bb-logger').BBLogger)(config.LOG.QUEUE_LOGGING.DIR,config.LOG.QUEUE_LOGGING.NAME);
+const reqResLogger = new (require('bb-logger').BBRequestLogMiddleware)(config.LOG.REQ_LOGGING.DIR,config.LOG.REQ_LOGGING.NAME);
 const routes = require('./routes/urls');
 const app = express();
+const context = require('./middleware/context');
 app.disable('x-powered-by');
 app.set('etag', false); // turn off
 
@@ -25,7 +29,9 @@ app.use(bodyParser.raw());
 app.use(bodyParser.text());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
+app.use("/",(req,res,next) => reqResLogger.requestLogMiddleware(req,res,next));
 app.use("/static", express.static(path.join(__dirname, 'public')));
+app.use("/product/", context.getContext);
 
 //graphQL
 const graphQLHTTP = require('express-graphql');
@@ -40,6 +46,7 @@ app.use('/product/v:apiVersion/gql', graphQLHTTP((req, res) => ({
     graphiql: app.get('env') === 'development', //Set to false if you don't want graphiql enabled
     context: {
         header: req.headers,
+        bb_context: req.context  //This is coming from GetContext API from member service
         //res:res    // Grab the token from headers
     },
 })));

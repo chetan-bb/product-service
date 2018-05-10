@@ -34,17 +34,17 @@ function getDBModels(sequelize) {
         return (file.indexOf(".") !== 0) && (file !== "base.js");
     })
     .forEach(function (file) {
-        console.log(`Checking ${file} file for dbModels`);
+        // console.log(`Checking ${file} file for dbModels`);
         let model = sequelize.import(path.join(modelDir, file));
         dbModels[model.name] = model;
     });
 
     Object.keys(dbModels).forEach(function (modelName) {
-        console.log("Running FKs linking");
+        // console.log("Running FKs linking");
         let associate = getAssociations(dbModels[modelName]);
-        console.log(`Linking FKs for ${modelName}`);
+        // console.log(`Linking FKs for ${modelName}`);
         if (associate && ("associate" in associate) && !dbModels[modelName].synced) {
-            console.log(`Linking FKs for ${modelName}`);
+            // console.log(`Linking FKs for ${modelName}`);
             associate.associate(dbModels, dbModels[modelName]);
             dbModels[modelName].synced = true;
         }

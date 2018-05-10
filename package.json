@@ -7,6 +7,7 @@
     "test": "istanbul cover --print detail _mocha test"
   },
   "dependencies": {
+    "aerospike": "^3.3.0",
     "async": "^2.6.0",
     "big-integer": "^1.6.26",
     "body-parser": "^1.18.2",
@@ -23,6 +24,7 @@
     "kafka-node": "^2.6.1",
     "morgan": "~1.9.0",
     "mysql2": "^1.5.2",
+    "newrelic": "^4.0.0",
     "nodemon": "^1.14.12",
     "path": "^0.12.7",
     "request": "^2.85.0",

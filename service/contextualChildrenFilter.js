@@ -10,6 +10,7 @@ function filterChildren(productList, contextualChildrenIds, parentProduct) {
     if(productList.length < 1 || contextualChildrenIds.length < 1){
         return filteredChildrenList; 
     }
+    
     productList.filter(
         el=>{
             if(el){

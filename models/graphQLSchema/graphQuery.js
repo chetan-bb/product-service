@@ -31,10 +31,10 @@ const QueryType = new GraphQLObjectType({
             },
             // The result of the previous resolver call
             resolve:async (product, args, context, info)=> { //esolve: (root, {productDescId, masterRi, ...}) => {
-                let ctx = context.context;
+                let bb_ctx = context.bb_context;
                 //console.log(context);
 
-                return await getProductDataForPdId(args.id, ctx.masterRi, ctx.cityId, ctx.memberId, ctx.visitorId);
+                return await getProductDataForPdId(args.id, bb_ctx.masterRi, bb_ctx.cityId, bb_ctx.memberId, bb_ctx.visitorId);
             }
         }
     })

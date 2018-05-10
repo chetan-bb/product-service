@@ -2,7 +2,6 @@ const controller = require("../service/productService");
 
 const getProduct = controller.getProduct;
 const EventEmitter = require('events');
-const productCacheEmitter = require('events');
 
 class UpdateCacheUtil extends EventEmitter {
     constructor(){
@@ -23,7 +22,7 @@ class UpdateCacheUtil extends EventEmitter {
     };
     
     emitUpdateCacheList(productIdList, masterRiList){
-        console.log(`Inside emitUpdateCacheList function. 
+        logger.debug(`Inside emitUpdateCacheList function. 
                 Args pdIdList= ${productIdList} riList= ${masterRiList}`);
         for (let pdId in productIdList){
             for(let ri in masterRiList){

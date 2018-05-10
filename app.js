@@ -7,10 +7,9 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const compression = require("compression");
 require("./validate");
-const config = require(path.join(__dirname, ".", "conf", "conf.json"));
-global.logger = new (require('bb-logger').BBLogger)(config.log.logging.dir,config.log.logging.name);
-global.qLogger = new (require('bb-logger').BBLogger)(config.log.qLogging.dir,config.log.qLogging.name);
-const reqResLogger = new (require('bb-logger').BBRequestLogMiddleware)(config.log.reqLogging.dir,config.log.reqLogging.name);
+global.logger = new (require('bb-logger').BBLogger)(config.LOG.LOGGING.DIR,config.LOG.LOGGING.NAME);
+global.qLogger = new (require('bb-logger').BBLogger)(config.LOG.QUEUE_LOGGING.DIR,config.LOG.QUEUE_LOGGING.NAME);
+const reqResLogger = new (require('bb-logger').BBRequestLogMiddleware)(config.LOG.REQ_LOGGING.DIR,config.LOG.REQ_LOGGING.NAME);
 const routes = require('./routes/urls');
 const app = express();
 const context = require('./middleware/context');
@@ -47,7 +46,7 @@ app.use('/product/v:apiVersion/gql', graphQLHTTP((req, res) => ({
     graphiql: app.get('env') === 'development', //Set to false if you don't want graphiql enabled
     context: {
         header: req.headers,
-        context: req.context  //This is coming from GetContext API from member service
+        bb_context: req.context  //This is coming from GetContext API from member service
         //res:res    // Grab the token from headers
     },
 })));
@@ -84,10 +83,5 @@ app.use(function (err, req, res, next) {
         error: {}
     });
 });
-process.on('uncaughtException', function (err) {
-    if (err) {
-        logger.exception("uncaught Exception " + err.stack);
-        process.exit(1);
-    }
-});
+
 module.exports = app;

@@ -160,8 +160,6 @@ async function getAllParentChildProductForProductId(productDescriptionId) {
 }
 
 async function isComboProduct(productDescriptionId) {
-     ;
-    // console.log("isComboProduct");
     await newRelicSegment("db_isComboProduct", async function(){
         let comboProducts = await process.dbModels.ComboProductDescription.findAll({
             where: {
@@ -169,14 +167,12 @@ async function isComboProduct(productDescriptionId) {
                 parent_combo_sku_id: productDescriptionId
             }
         });
-    if(comboProducts.length>0){
-         ;
-        return true;
-    }
-    else{
-         ;
-        return false;
-    }
+        if(comboProducts.length>0){
+            return true;
+        }
+        else{
+            return false;
+        }
     })
 }
 

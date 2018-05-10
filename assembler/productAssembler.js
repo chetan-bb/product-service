@@ -10,36 +10,6 @@ const util = require('../utils/util');
 const path = require('path');
 
 const protoOverrideProduct = require('../models/proto_override/override').Product;
-const { newRelicSegment,newRelicTransaction} = require("../utils/newRelic");
-// let newRelicEnabled;
-// let newRelic;
-// if (global.config["NEWRELIC_ENABLED"] === true || global.config["NEWRELIC_ENABLED"] === "true") {
-//     newRelic = require("newrelic");
-//     newRelicEnabled = true;
-// }
-// process.newRelic = newRelic;
-//
-// const nr = process.newRelic;
-// function newRelicTransaction(tag,cb){
-//     return new Promise(function(resolve,reject){
-//         if(newRelicEnabled){
-//             resolve(nr.startBackgroundTransaction(tag,cb));
-//         }
-//         else{
-//             resolve(cb);
-//         }
-//     })
-// }
-// function newRelicSegment(segmentName,cb){
-//     return new Promise(function(resolve,reject){
-//         if(newRelicEnabled){
-//             resolve(nr.startSegment(segmentName, true, cb));
-//         }
-//         else{
-//             resolve(cb);
-//         }
-//     })
-// }
 
 async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, visitorId) {
     try {

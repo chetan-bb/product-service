@@ -1,10 +1,4 @@
-
-
-const path = require('path');
-const config = require(path.join(__dirname, "..", "conf", "conf.json"));
-
-const aerospike = require("aerospike"); 
-
+const aerospike = require("aerospike");
 
 class AerospikeConfig {
     constructor() {

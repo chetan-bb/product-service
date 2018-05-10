@@ -7,41 +7,12 @@ const util = require('../utils/util');
 const CONSTANTS = require('../assembler/constants');
 const assert = require('assert');
 const apiCall = require('./apiCall');
-const { newRelicSegment,newRelicTransaction} = require("../utils/newRelic");
+const { newRelicSegment} = require("../utils/newRelic");
 
 
-let AerospikeStorage = require('../datalayer/aerospikeStorage').AerospikeStorage;
+let {AerospikeStorage} = require('../datalayer/aerospikeStorage');
 const aerospikeStorage = new AerospikeStorage();
 
-// let newRelicEnabled;
-// let newRelic;
-// if (global.config["NEWRELIC_ENABLED"] === true || global.config["NEWRELIC_ENABLED"] === "true") {
-//     newRelic = require("newrelic");
-//     newRelicEnabled = true;
-// }
-// process.newRelic = newRelic;
-//
-// const nr = process.newRelic;
-// function newRelicTransaction(tag,cb){
-//     return new Promise(function(resolve,reject){
-//         if(newRelicEnabled){
-//             resolve(nr.startBackgroundTransaction(tag,cb));
-//         }
-//         else{
-//             resolve(cb());
-//         }
-//     })
-// }
-// function newRelicSegment(segmentName,cb){
-//     return new Promise(function(resolve,reject){
-//         if(newRelicEnabled){
-//             resolve(nr.startSegment(segmentName, true, cb));
-//         }
-//         else{
-//             resolve(cb());
-//         }
-//     })
-// }
 
 /*
 This is responsible to call data-layer and get json object from there
@@ -55,10 +26,6 @@ async function getProduct(productDescriptionId, masterRi, updateCacheMode=false)
         if(!updateCacheMode){
             data = await aerospikeStorage.getData(key)
         }
-        let product; 
-        let productDesc;
-        let city;
-        let supplier;
         if(data && !data.isEmpty() && !updateCacheMode){
             return data;
         }
@@ -67,29 +34,28 @@ async function getProduct(productDescriptionId, masterRi, updateCacheMode=false)
         if(!Product || Product.isEmpty()){
             return null;
         }
-        let ProductDescriptionAttr = null;
-        let ParentCategory = null;
-        let ManualTagValues = null;
-        let AutoTagValues = null;
-        let Supplier = null;
-        let CosmeticDescription = null;
-        if (Product) {
-            let resultBundlePackPDMetaParentCategory = await getProductRelatedDataAsync(Product);
-            // console.log(resultBundlePackPDMetaParentCategory);
-            if (resultBundlePackPDMetaParentCategory.ProductBundlePack &&
-                resultBundlePackPDMetaParentCategory.ProductBundlePack.status === CONSTANTS.BUNDLE_PACK_CONST.ACTIVE) {
-                Product['ProductBundlePack'] = resultBundlePackPDMetaParentCategory.ProductBundlePack
-            } else {
-                Product['ProductBundlePack'] = null;
-            }
-            ProductDescriptionAttr = resultBundlePackPDMetaParentCategory.ProductDescriptionAttr;
-            ParentCategory = resultBundlePackPDMetaParentCategory.ParentCategory;
-            ManualTagValues  = tagUtil.createTagObject(resultBundlePackPDMetaParentCategory.ManualTagValues);
-            AutoTagValues = tagUtil.createTagObject(resultBundlePackPDMetaParentCategory.AutoTagValues);
-            Supplier = await database.getSupplier(Product.supplier_id);
-            CosmeticDescription = await cosmeticProductDetails(ManualTagValues, Product,
-                resultBundlePackPDMetaParentCategory.ProductDescriptionAttr)
+        // let ProductDescriptionAttr = null;
+        // let ParentCategory = null;
+        // let ManualTagValues = null;
+        // let AutoTagValues = null;
+        // let Supplier = null;
+        // let CosmeticDescription = null;
+        //
+        let resultBundlePackPDMetaParentCategory = await getProductRelatedDataAsync(Product);
+        if (resultBundlePackPDMetaParentCategory.ProductBundlePack &&
+            resultBundlePackPDMetaParentCategory.ProductBundlePack.status === CONSTANTS.BUNDLE_PACK_CONST.ACTIVE) {
+            Product['ProductBundlePack'] = resultBundlePackPDMetaParentCategory.ProductBundlePack
+        } else {
+            Product['ProductBundlePack'] = null;
         }
+        let ProductDescriptionAttr = resultBundlePackPDMetaParentCategory.ProductDescriptionAttr;
+        let ParentCategory = resultBundlePackPDMetaParentCategory.ParentCategory;
+        let ManualTagValues  = tagUtil.createTagObject(resultBundlePackPDMetaParentCategory.ManualTagValues);
+        let AutoTagValues = tagUtil.createTagObject(resultBundlePackPDMetaParentCategory.AutoTagValues);
+        let Supplier = await database.getSupplier(Product.supplier_id);
+        let CosmeticDescription = await cosmeticProductDetails(ManualTagValues, Product,
+            resultBundlePackPDMetaParentCategory.ProductDescriptionAttr);
+    
         let value = {Product, ProductDescriptionAttr, ParentCategory, ManualTagValues, AutoTagValues,
             Supplier, CosmeticDescription};
 
@@ -351,7 +317,6 @@ async function getAllRelatedComboProductsForProductId(productDescriptionId) {
                 "dest_slug"     : "prod_id="+ productDescriptionId,
             };
         }
-        // console.log('Related combo SKU ids- '+ childIds);
 
         return await Promise.resolve(response);  
     });
@@ -379,7 +344,6 @@ async function getAllAvailabilityInfo(productDescriptionId, masterRi, visitorId,
             return await(apiCall.downloadAllAvailabilityInfo(productDescriptionId, 
                 masterRi, visitorId, memberId ));
         }catch(err){
-            // console.log(err);
             return {
                 'contextual_children':[],
                 'availability_details':{}

@@ -19,12 +19,8 @@ function checkForKeys(object1,object2,tag){
         }
     }
 }
-let config;
-try{
-    config = require(path.join(__dirname, ".", "conf", "conf.json"));
-}catch(exc){
-    throw new Error("Conf file not found");
-}
+
+const config = require(path.join(__dirname, ".", "conf", "conf.json"));
 
 const configSchema = {
     "NEWRELIC": {
@@ -53,8 +49,21 @@ const configSchema = {
     "API_DOMAIN_NAME": "",
     "DOMAIN_NAME":  "",
     "CAP_VARIABLE_WEIGHT": "",
-    "BASE_IMAGE_URL": ""
-
+    "BASE_IMAGE_URL": "",
+    "LOG" : {
+        "LOGGING" : {
+            "DIR" : "",
+            "NAME" : ""
+        },
+        "REQ_LOGGING" : {
+            "DIR" : "",
+            "NAME" : ""
+        },
+        "QUEUE_LOGGING" : {
+            "DIR" : "",
+            "NAME" : ""
+        }
+    }
 
 };
 
@@ -66,6 +75,5 @@ try {
     global.config = config;
 
 } catch(e){
-    logger.exception(e);
     throw e;
 }

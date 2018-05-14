@@ -4,3 +4,4 @@ npm-debug.log
 README.md
 docker-compose.yml
 node_modules
+*/conf.json

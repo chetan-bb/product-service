@@ -1,40 +1,41 @@
-//https://nodewebapps.com/2017/11/04/getting-started-with-nodejs-and-kafka/
-//https://blog.mimacom.com/apache-kafka-with-node-js/
-//https://www.linkedin.com/pulse/introduction-kafka-using-nodejs-pankaj-panigrahi/
-//https://medium.freecodecamp.org/understanding-node-js-event-driven-architecture-223292fcbc2d
+"use strict";
+
 const kafka = require('kafka-node');
-module.exports = function (app) {
-    let kafkaConfig = {
-        brokerUrl: "localhost:9092",
-        options: {
-            groupId: "bb-consumer-group",
-            fetchMaxWaitMs: 1000,
-            autoCommit: true,
-            autoCommitIntervalMs: 5000,
-            encoding: 'utf8'
-        },
-        topics: [
-            {
-                topic: "updateProductCacheQueue_bbasync"
-            }
-        ]
-    };
-
-    const client = new kafka.Client(kafkaConfig.brokerUrl);
+const cacheUtil = require('../utils/updateCacheUtil');
 
 
-    const consumer = new kafka.HighLevelConsumer(client, kafkaConfig.topics, kafkaConfig.options);
+const path = require("path");
+require('../setup');
+const kafkaUtil = require('./util');
+const consumerGroupConfig = require(path.join(__dirname, "config.json"));
+const queueNameSpace = consumerGroupConfig.queueNameSpace;
 
-    consumer.on("message", function (message) {
-        console.log(`Message received from kafka ${JSON.stringify(message)}`);
-    });
+const topics = consumerGroupConfig.topics.map((topic)=> {
+    return kafkaUtil.appendTopicNameSpace(topic, queueNameSpace)
+});
 
-    consumer.on("error", function (err) {
-        console.log("error", err);
-    });
+Object.assign(consumerGroupConfig.memberOptions,
+    {groupId: kafkaUtil.getConsumerGroup(consumerGroupConfig.topics[0])});
 
-    consumer.on('offsetOutOfRange', function (err) {
-        console.log('offsetOutOfRange:', err);
-    });
+const consumer = new kafka.ConsumerGroup(consumerGroupConfig.memberOptions, topics);
 
-};
+consumer.on("message", function (message) {
+    console.log(`Message received from kafka ${JSON.stringify(message)}`);
+    let data = kafkaUtil.getMessageData(message, topics);
+    if (!data) return;
+
+    // update product cache
+    cacheUtil.emitUpdateCacheList(data['ids'], data['ris']);
+
+});
+
+consumer.on('connect', function () {
+    console.log("ConsumerGroup is ready. ");
+});
+
+
+consumer.on("error", function (err) {
+    console.log("error", err);
+});
+
+

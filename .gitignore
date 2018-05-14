@@ -8,4 +8,7 @@ gitignore.swp
 self-ref/*
 coverage/*
 conf/*
+config.json
 .env
+devops/*
+bb-logger/*

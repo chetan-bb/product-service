@@ -8,10 +8,7 @@ const CONSTANTS = require('../assembler/constants');
 const assert = require('assert');
 const apiCall = require('./apiCall');
 const { newRelicSegment} = require("../utils/newRelic");
-
-
-let {AerospikeStorage} = require('../datalayer/aerospikeStorage');
-const aerospikeStorage = new AerospikeStorage();
+const aerospikeStorage = process.aerospikeInstance;
 
 
 /*

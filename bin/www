@@ -4,50 +4,34 @@
  * Module dependencies.
  */
 
+require('../setup');
 var app = require('../app');
-var debug = require('debug')('microservice:server');
 var http = require('http');
-const initDB = require('../datalayer/initDBInstanceModels');
-const setCustomJsFunction = require('../utils/customJsUtil');
-const initialiseKafkaConsumer = require('../kafka/consumer');
-
-/**
- * Get port from environment and store in Express.
- */
-
-var port = normalizePort(process.env.PORT || '32001');
-app.set('port', port);
-
-/**
- * Create HTTP server.
- */
 
 let server = null;
-initDB.dbInstance.authenticate()
-    .then(() => {
-        logger.debug('Mysql Connection has been established successfully.');
-        setDBInstanceModels();
-        setCustomJsFunction();
-        initialiseKafkaConsumer(app);
-        server = http.createServer(app);
+httpServerListener();
 
-        /**
-         * Listen on provided port, on all network interfaces.
-         */
+function httpServerListener() {
+    /**
+     * Get port from environment and store in Express.
+     */
 
-        server.listen(port);
-        server.on('error', onError);
-        server.on('listening', onListening);
+    let port = normalizePort(process.env.PORT || '32001');
+    app.set('port', port);
 
-    })
-    .catch(err => {
-        logger.exception('Unable to connect to the database:', err);
-    });
+    /**
+     * Create HTTP server.
+     */
 
-    
-function setDBInstanceModels() {
-    process.dbInstance = initDB.dbInstance;
-    process.dbModels = initDB.dbModels;
+    server = http.createServer(app);
+
+    /**
+     * Listen on provided port, on all network interfaces.
+     */
+
+    server.listen(port);
+    server.on('error', onError);
+    server.on('listening', onListening);
 }
 
 /**

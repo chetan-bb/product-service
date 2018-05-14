@@ -24,6 +24,7 @@ const ProductType = new GraphQLObjectType({
         sp: {type: GraphQLFloat},
         pack_desc: {type: GraphQLFloat},
         w: {type: GraphQLString},
+        base_img_url: {type: GraphQLString},
 
 
         // object type fields
@@ -197,7 +198,7 @@ const Discount = new GraphQLObjectType({
     description: "Discount for a product",
     fields: () => ({
         type: {type: GraphQLString},
-        amount: {type: GraphQLFloat},
+        value: {type: GraphQLFloat},
     })
 });
 
@@ -217,6 +218,7 @@ const ImageType = new GraphQLObjectType({
         s: {type: GraphQLString},
         l: {type: GraphQLString},
         ml: {type: GraphQLString},
+        m: {type: GraphQLString},
     })
 });
 

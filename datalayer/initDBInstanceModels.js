@@ -6,12 +6,12 @@ const Sequelize = require('sequelize');
 const modelDir = path.join(__dirname, "../models/schema");
 
 function getDbInstance() {
-    let database = process.env.DATABASE || 'bigbasket';
-    let username = process.env.USERNAME || 'root';
-    let password = process.env.PASSWORD || 'toor';
-    let host = process.env.HOST || 'localhost';
-    let dialect = process.env.DIALECT || 'mysql';
-    let dbPort = process.env.DBPORT || 3306;
+    let database = config.DATABASE;
+    let username = config.USERNAME;
+    let password = config.PASSWORD;
+    let host = config.HOST;
+    let dialect = config.DIALECT;
+    let dbPort = config.DBPORT;
 
     return new Sequelize(database, username, password, {
         host: host,

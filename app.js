@@ -6,11 +6,9 @@ const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const compression = require("compression");
-require("./validate");
-global.logger = new (require('bb-logger').BBLogger)(config.LOG.LOGGING.DIR,config.LOG.LOGGING.NAME);
-global.qLogger = new (require('bb-logger').BBLogger)(config.LOG.QUEUE_LOGGING.DIR,config.LOG.QUEUE_LOGGING.NAME);
-const reqResLogger = new (require('bb-logger').BBRequestLogMiddleware)(config.LOG.REQ_LOGGING.DIR,config.LOG.REQ_LOGGING.NAME);
+const reqResLogger = global.reqLogger;
 const routes = require('./routes/urls');
+const handler = require('./handler/productHandler');
 const app = express();
 const context = require('./middleware/context');
 app.disable('x-powered-by');
@@ -29,6 +27,9 @@ app.use(bodyParser.raw());
 app.use(bodyParser.text());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
+
+app.use("/product/health/", handler.health);
+
 app.use("/",(req,res,next) => reqResLogger.requestLogMiddleware(req,res,next));
 app.use("/static", express.static(path.join(__dirname, 'public')));
 app.use("/product/", context.getContext);

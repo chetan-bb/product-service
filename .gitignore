@@ -7,3 +7,7 @@ gitignore.swp
 .idea/*
 self-ref/*
 coverage/*
+conf/*
+.env
+devops/*
+bb-logger/*

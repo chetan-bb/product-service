@@ -9,6 +9,8 @@ const CONSTANTS = require('./constants');
 const util = require('../utils/util');
 const path = require('path');
 
+const protoOverrideProduct = require('../models/proto_override/override').Product;
+
 async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, visitorId) {
     try {
         let productPricingResultObject = await Promise.all([
@@ -27,9 +29,8 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
         
         let contextualChildren = productPricingResultObject[5]['contextual_children'];
         let availabilityInfo = productPricingResultObject[5]['availability_details'];
-        
         if (!productResult || productResult.isEmpty()) {
-            throw `Product not found for given pd id ${productDescId} and masterRi ${masterRi}`;
+            throw new Error(`Product not found for given pd id ${productDescId} and masterRi ${masterRi}`);
         }
         childProducts = contextualChildrenFilterUtil.filterChildren(childProducts, 
             contextualChildren, productResult.Product);
@@ -51,7 +52,8 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
                     childResult.ManualTagValues, childResult.AutoTagValues,
                     promoSaleResult[childResult.Product.id],
                     childResult.CosmeticDescription, 
-                    availabilityInfo[childResult.Product.id]);
+                    availabilityInfo[childResult.Product.id],
+                    childResult.Supplier);
                 childProductsResponse.push(result);
             });
         }
@@ -62,12 +64,13 @@ async function getProductDataForPdId(productDescId, masterRi, cityId, memberId, 
             promoSaleResult[productResult.Product.id],
             productResult.CosmeticDescription, 
             availabilityInfo[productResult.Product.id],
+            productResult.Supplier,
             comboResult, additionDestination);
 
         return Object.assign(parentProductResponse, {children: childProductsResponse,
-            'base_img_url': process.env.BASEIMAGEURL || CONSTANTS.BASE_IMAGE_URL});
+            'base_img_url': global.config.BASE_IMAGE_URL});
     } catch (err) {
-        throw {status:500, message:err.message, stack: err.stack};
+        throw {status:500, message:err.message || err, stack: err.stack || err};
     }
 
 }
@@ -77,9 +80,11 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
                                     ManualTagValues, AutoTagValues, 
                                     promoSaleData, cosmeticDescription,
                                     availabilityInfo,
+                                    supplier,
                                     comboResult = {},
                                     additionDestination = {}) {
     // promo and sale data from python layer
+     ;
     let promoData = {};
     let saleInfo = {};
     let product_attr = {};
@@ -100,7 +105,7 @@ function generateProductDetailResponse(Product, ProductDescriptionAttr, ParentCa
                                             getCategoryData(Product),
                                             getDiscount(Product, product_attr),
                                             getProductAdditionalAttr(Product),
-                                            getVariableWeightMsgAndLink(Product.ProductDescription,
+                                            getVariableWeightMsgAndLink(supplier, Product.ProductDescription,
                                                 ParentCategory, Product.City), //todo this city might be request city i think
                                             getProductTags(ManualTagValues, AutoTagValues),
                                             generateAdditionalAttr(cosmeticFunctionDetails),
@@ -158,7 +163,7 @@ function getProductTags(ManualTagValues, AutoTagValues) {
 
 function getProductImages(Product, ProductDescriptionAttr) {
     let primaryImageObj = imageUtil.getProductPrimaryImage(Product);
-    console.log(primaryImageObj);
+    // console.log(primaryImageObj);
     if(!primaryImageObj || primaryImageObj.isEmpty()){
         return {
             images:[]
@@ -173,7 +178,7 @@ function getProductImages(Product, ProductDescriptionAttr) {
             noWatermark, ignoreShade,
             ProductDescriptionAttr.strValue);
     }
-    console.log(secondaryImages);
+    // console.log(secondaryImages);
 
     let images = [generateMultipleImageUrls(primaryImageObj.subUrl, primaryImageObj.imageName)];
     let secondaryImagePath = secondaryImages.map((secondaryImageName) => {
@@ -184,7 +189,7 @@ function getProductImages(Product, ProductDescriptionAttr) {
     return {images:images}
 }
 
-function generateMultipleImageUrls(subUrl, imageName, imageSize=['ml', 's', 'l']) {
+function generateMultipleImageUrls(subUrl, imageName, imageSize=['ml', 's', 'l', 'm']) {
     let images = {};
     for (let i = 0, len = imageSize.length; i < len; i++) {
         images[imageSize[i]] = path.join(subUrl, imageSize[i], imageName)
@@ -195,9 +200,9 @@ function generateMultipleImageUrls(subUrl, imageName, imageSize=['ml', 's', 'l']
 function getBrandData(Product) {
     return {
         "brand": {
-            "name": Product.brandName.call(Product),
-            "slug": Product.brandSlug.call(Product),
-            "url": `/pb/${Product.brandSlug.call(Product)}`
+            "name": protoOverrideProduct.brandName(Product),
+            "slug": protoOverrideProduct.brandSlug(Product),
+            "url": `/pb/${protoOverrideProduct.brandSlug(Product)}`
         }
     }
 }
@@ -205,14 +210,15 @@ function getBrandData(Product) {
 function getCategoryData(Product) {
     return {
         "category": {
-            "tlc_name": Product.topCategoryName.call(Product),
-            "tlc_slug": Product.topCategorySlug.call(Product)
+            "tlc_name": protoOverrideProduct.topCategoryName(Product),
+            "tlc_slug": protoOverrideProduct.topCategorySlug(Product)
         }
     }
 }
 
 function getDiscount(Product, product_attr = {}) {
     if (!product_attr.isEmpty()) {
+        if (!product_attr['dis_val']) return {};
         return {"discount": {"type": product_attr['dis_t'], "value": product_attr['dis_val']}}
     }
     return discountUtil.getDiscountValueType(Product);
@@ -223,9 +229,9 @@ function getDiscount(Product, product_attr = {}) {
 function getProductData(Product, product_attr={}) {//todo check Product.mrp must be equal to product_attr.mrp
     return {
         "id": Product.ProductDescription.id,
-        "desc": Product.description.call(Product),
-        "pack_desc": Product.multipackDescription.call(Product) || Product.PackType.call(Product),
-        "w": Product.weight.call(Product),
+        "desc": protoOverrideProduct.description(Product),
+        "pack_desc": protoOverrideProduct.multipackDescription(Product) || protoOverrideProduct.PackType(Product),
+        "w": protoOverrideProduct.weight(Product),
         "mrp": Product.mrp,
         "sp": product_attr['sp'] ? product_attr['sp']: Product.salePrice
     };
@@ -240,9 +246,9 @@ function getPricingData(Price) {
 
 function getProductAdditionalAttr(Product) {
 
-    let additionalInfoOne = Product.additionalInfoOne.call(Product);
-    let additionalInfoTwo = Product.additionalInfoTwo.call(Product);
-    let additionalInfoThree = Product.additionalInfoThree.call(Product);
+    let additionalInfoOne = protoOverrideProduct.additionalInfoOne(Product);
+    let additionalInfoTwo = protoOverrideProduct.additionalInfoTwo(Product);
+    let additionalInfoThree = protoOverrideProduct.additionalInfoThree(Product);
     let tabContent = [];
 
     if(additionalInfoOne && !additionalInfoOne.isEmpty()){
@@ -287,9 +293,11 @@ function extractTabTitleAndContent(extractingString) {
     return {title: title, content: content}
 }
 
-function getVariableWeightMsgAndLink(ProductDescription, ParentCategory, City) {
-    let storeVariableWeight = false; //todo fix me for speciality products
-    let CAP_VARIABLE_WEIGHT = 5; //todo fix me for getting data from local settings
+function getVariableWeightMsgAndLink(supplier, ProductDescription, ParentCategory, City) {
+    // let storeVariableWeight = false; //todo fix me for speciality products
+    let storeVariableWeight = (supplier.FulfillmentInfo.fulfillment_type === CONSTANTS.FI_TYPE_SPECIALITY_CHILD ||
+                                supplier.FulfillmentInfo.fulfillment_type === CONSTANTS.FI_TYPE_SPECIALITY);
+    let CAP_VARIABLE_WEIGHT = global.config["CAP_VARIABLE_WEIGHT"];
     if(ProductDescription.hasVariableWeight && City.warehouseFulfilment){
         return { variableWeight: {
                     msg: getVariableWeightMsg(ProductDescription, ParentCategory,

@@ -6,9 +6,9 @@ const getProductDataForPdId = require('../assembler/productAssembler');
 function productDetailHandler(req, res) {
     let apiVersion = req.params['apiVersion'];
     let productDescId = req.params['productDescId'];
-    let masterRi = req.params['masterRi'];
-    let cityId = req.params['cityId'];
-    let visitorId = req.params['visitorId'];
+    let masterRi = req.context['masterRi'];
+    let cityId = req.context['cityId'];
+    let visitorId = req.context['visitorId'];
     let memberId = req.query['member_id'];
 
     getProductDataForPdId(productDescId, masterRi, cityId, memberId, visitorId)
@@ -18,9 +18,10 @@ function productDetailHandler(req, res) {
                 "response": result
             });
         }).catch((err) => {
+        logger.exception(err);
         res.status(err.status || 500).json({
             "status": -1, "message": err.message,
-            "stack":err.stack
+            // "stack":err.stack
         });
     });
 }

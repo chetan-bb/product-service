@@ -90,7 +90,7 @@ describe("Function Unit test", function () {
             expect(discount).to.have.property('type');
             expect(discount).to.have.property('value');
 
-            console.log(discountValueType);
+            // console.log(discountValueType);
             assert.equal(discount['type'], 'A');
             assert.equal(discount['value'], '100');
             done();

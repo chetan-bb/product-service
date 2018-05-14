@@ -26,7 +26,7 @@ function getMessageData(message, topics) {
         } else {
             assert(false, 'Content-type not acceptable');
         }
-        return body
+        return body;
     } catch (e) {
         qLogger.exception(e);
     }

@@ -1,13 +1,11 @@
 "use strict";
 
+require('../setup');
 const kafka = require('kafka-node');
 const cacheUtil = require('../utils/updateCacheUtil');
 
-
-const path = require("path");
-require('../setup');
 const kafkaUtil = require('./util');
-const consumerGroupConfig = require(path.join(__dirname, "config.json"));
+const consumerGroupConfig = global.kafkaConfig;
 const queueNameSpace = consumerGroupConfig.queueNameSpace;
 
 const topics = consumerGroupConfig.topics.map((topic)=> {

@@ -2,7 +2,6 @@
 
 const express = require('express');
 const path = require('path');
-const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const compression = require("compression");
@@ -21,7 +20,6 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'handlebars');
 
 app.engine('handlebars', require('hbs').__express);
-//app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
 app.use(bodyParser.text());
@@ -37,18 +35,12 @@ app.use("/product/", context.getContext);
 //graphQL
 const graphQLHTTP = require('express-graphql');
 const ProductAppSchema = require('./models/graphQLSchema/graphQuery');
-// https://medium.com/@tomlagier/scaffolding-a-rock-solid-graphql-api-b651c2a36438
-//https://marmelab.com/blog/2017/09/06/dive-into-graphql-part-iii-building-a-graphql-server-with-nodejs.html#writing-resolvers
-//https://dev-blog.apollodata.com/optimizing-your-graphql-request-waterfalls-7c3f3360b051
-//https://medium.com/@FdMstri/testing-a-graphql-server-13512408c2fb
 app.use('/product/v:apiVersion/gql', graphQLHTTP((req, res) => ({
     schema:ProductAppSchema,
-    //rootValue: root, // object containing function
     graphiql: app.get('env') === 'development', //Set to false if you don't want graphiql enabled
     context: {
         header: req.headers,
         bb_context: req.context  //This is coming from GetContext API from member service
-        //res:res    // Grab the token from headers
     },
 })));
 

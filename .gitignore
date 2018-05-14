@@ -9,3 +9,5 @@ self-ref/*
 coverage/*
 conf/*
 .env
+devops/*
+bb-logger/*

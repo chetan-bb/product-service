@@ -8,10 +8,7 @@ const CONSTANTS = require('../assembler/constants');
 const assert = require('assert');
 const apiCall = require('./apiCall');
 const { newRelicSegment} = require("../utils/newRelic");
-
-
-let {AerospikeStorage} = require('../datalayer/aerospikeStorage');
-const aerospikeStorage = new AerospikeStorage();
+const aerospikeStorage = process.aerospikeInstance;
 
 
 /*
@@ -235,7 +232,6 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
         let is_combo_dicount = false;
         let annotation_msg = '';
         let is_combo_product = await database.isComboProduct(productDescriptionId);
-         ;
         let is_single_sku_combo = await database.isSingleSkuComboProduct(productDescriptionId);
         if(is_combo_product){
             annotation_msg = await getAnnotationMsg(productDescriptionId, childIds, childProductsDict, is_single_sku_combo);    

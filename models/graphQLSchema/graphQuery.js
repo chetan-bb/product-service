@@ -30,7 +30,7 @@ const QueryType = new GraphQLObjectType({
                 id: {type: GraphQLNonNull(GraphQLInt) }
             },
             // The result of the previous resolver call
-            resolve:async (product, args, context, info)=> { //esolve: (root, {productDescId, masterRi, ...}) => {
+            resolve:async (product, args, context, info)=> {
                 let bb_ctx = context.bb_context;
                 //console.log(context);
 

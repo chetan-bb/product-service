@@ -189,7 +189,7 @@ function getProductImages(Product, ProductDescriptionAttr) {
     return {images:images}
 }
 
-function generateMultipleImageUrls(subUrl, imageName, imageSize=['ml', 's', 'l']) {
+function generateMultipleImageUrls(subUrl, imageName, imageSize=['ml', 's', 'l', 'm']) {
     let images = {};
     for (let i = 0, len = imageSize.length; i < len; i++) {
         images[imageSize[i]] = path.join(subUrl, imageSize[i], imageName)
@@ -218,6 +218,7 @@ function getCategoryData(Product) {
 
 function getDiscount(Product, product_attr = {}) {
     if (!product_attr.isEmpty()) {
+        if (!product_attr['dis_val']) return {};
         return {"discount": {"type": product_attr['dis_t'], "value": product_attr['dis_val']}}
     }
     return discountUtil.getDiscountValueType(Product);

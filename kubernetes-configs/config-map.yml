@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-map-product-service
-data:
-  db.host: "qas6-db.bigbasket.com"
-  node.port: "32001"

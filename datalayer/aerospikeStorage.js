@@ -35,9 +35,11 @@ class AerospikeStorage{
                 timeout:1000
             })
             .then(function(client){
+                console.log('Connected to the aerospike!');
                 self.aerospikeClient = client;
             }).catch(function(err){
-                self.aerospikeClient = null;
+                console.error('Unable to connect to the aerospike:', err);
+                process.exit(1);
             })
         }
     

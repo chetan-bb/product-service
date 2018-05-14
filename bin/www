@@ -8,31 +8,26 @@ require('../setup');
 var app = require('../app');
 var http = require('http');
 
-let server = null;
-httpServerListener();
+/**
+ * Get port from environment and store in Express.
+ */
 
-function httpServerListener() {
-    /**
-     * Get port from environment and store in Express.
-     */
+let port = normalizePort(process.env.PORT || '32001');
+app.set('port', port);
 
-    let port = normalizePort(process.env.PORT || '32001');
-    app.set('port', port);
+/**
+ * Create HTTP server.
+ */
 
-    /**
-     * Create HTTP server.
-     */
+let server = http.createServer(app);
 
-    server = http.createServer(app);
+/**
+ * Listen on provided port, on all network interfaces.
+ */
 
-    /**
-     * Listen on provided port, on all network interfaces.
-     */
-
-    server.listen(port);
-    server.on('error', onError);
-    server.on('listening', onListening);
-}
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
 
 /**
  * Normalize a port into a number, string, or false.

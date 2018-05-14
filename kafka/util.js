@@ -3,7 +3,7 @@
 const assert = require('assert');
 
 function appendTopicNameSpace(topicName, queueNameSpace) {
-    if (global.DEBUG) {
+    if (config.DEBUG) {
        return `${queueNameSpace}${topicName}`
     }
     return topicName;
@@ -26,10 +26,9 @@ function getMessageData(message, topics) {
         } else {
             assert(false, 'Content-type not acceptable');
         }
-        console.log(`Message received from kafka ${body}`); // {'ids': product_desc_ids, 'ris': master_ri_ids}
         return body
     } catch (e) {
-        console.log(e);
+        qLogger.exception(e);
     }
 }
 

@@ -232,7 +232,6 @@ async function getAllComboProductsForProductId(productDescriptionId, masterRi) {
         let is_combo_dicount = false;
         let annotation_msg = '';
         let is_combo_product = await database.isComboProduct(productDescriptionId);
-         ;
         let is_single_sku_combo = await database.isSingleSkuComboProduct(productDescriptionId);
         if(is_combo_product){
             annotation_msg = await getAnnotationMsg(productDescriptionId, childIds, childProductsDict, is_single_sku_combo);    

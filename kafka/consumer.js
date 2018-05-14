@@ -20,7 +20,7 @@ Object.assign(consumerGroupConfig.memberOptions,
 const consumer = new kafka.ConsumerGroup(consumerGroupConfig.memberOptions, topics);
 
 consumer.on("message", function (message) {
-    console.log(`Message received from kafka ${JSON.stringify(message)}`);
+    qLogger.info(`Message received from kafka ${JSON.stringify(message)}`);
     let data = kafkaUtil.getMessageData(message, topics);
     if (!data) return;
 
@@ -30,12 +30,12 @@ consumer.on("message", function (message) {
 });
 
 consumer.on('connect', function () {
-    console.log("ConsumerGroup is ready. ");
+    qLogger.debug("ConsumerGroup is ready. ");
 });
 
 
 consumer.on("error", function (err) {
-    console.log("error", err);
+    qLogger.debug("error", err);
 });
 
 

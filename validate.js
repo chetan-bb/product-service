@@ -81,7 +81,7 @@ const kafkaConfigSchema = {
     "queueNameSpace": "",
     "topics": []
 };
-const kafkaConfig = process.env.QUEUE_CONFIG_PATH || require(path.join(__dirname, '.', "kafka", "conf.json"));
+const kafkaConfig = process.env.QUEUE_CONFIG_PATH || require(path.join(__dirname, ".", "conf", "queueConf.json"));
 
 try {
     checkForKeys(kafkaConfigSchema, kafkaConfig, "Conf");

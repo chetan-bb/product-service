@@ -5,7 +5,6 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const compression = require("compression");
-const reqResLogger = global.reqLogger;
 const routes = require('./routes/urls');
 const handler = require('./handler/productHandler');
 const app = express();
@@ -28,7 +27,7 @@ app.use(cookieParser());
 
 app.use("/product/health/", handler.health);
 
-app.use("/",(req,res,next) => reqResLogger.requestLogMiddleware(req,res,next));
+app.use("/",(req,res,next) => reqLogger.requestLogMiddleware(req,res,next));
 app.use("/static", express.static(path.join(__dirname, 'public')));
 app.use("/product/", context.getContext);
 
